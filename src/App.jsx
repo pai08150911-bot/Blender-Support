@@ -1,9 +1,7 @@
+import CategorySpace from './components/CategorySpace/CategorySpace'
+
 function App() {
-  return (
-    <h1 className="text-4xl font-bold">
-      Blender Support
-    </h1>
-  )
+  return <CategorySpace />
 }
 
 export default App
