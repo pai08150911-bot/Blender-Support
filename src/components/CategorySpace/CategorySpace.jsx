@@ -92,17 +92,17 @@ const FALLBACK_PATH = '/models/material.glb'
 
 function CategorySpace() {
   const containerRef = useRef(null)
+  const logoRef = useRef(null)
 
   useEffect(() => {
     const container = containerRef.current
 
-    // Scene
     const scene = new THREE.Scene()
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(
       60,
-      container.clientWidth / container.clientHeight,
+      container.clientWidth /
+        container.clientHeight,
       0.1,
       1000
     )
@@ -115,11 +115,11 @@ function CategorySpace() {
 
     camera.lookAt(0, 0, 0)
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-    })
+    const renderer =
+      new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      })
 
     renderer.setSize(
       container.clientWidth,
@@ -270,7 +270,6 @@ function CategorySpace() {
     // Particle ring
     const ringGeometries = []
     const ringMaterials = []
-    const rings = []
 
     const particleColors = [
       new THREE.Color(0xffffff),
@@ -330,9 +329,7 @@ function CategorySpace() {
             ringPositions.push(
               Math.cos(angle) *
                 radius,
-
               0,
-
               Math.sin(angle) *
                 radius
             )
@@ -484,7 +481,8 @@ function CategorySpace() {
 
             transparent: true,
             depthWrite: false,
-            blending: THREE.AdditiveBlending,
+            blending:
+              THREE.AdditiveBlending,
           })
 
         const ring =
@@ -502,8 +500,6 @@ function CategorySpace() {
         ringMaterials.push(
           ringMaterial
         )
-
-        rings.push(ring)
       }
     )
 
@@ -519,9 +515,7 @@ function CategorySpace() {
         return new THREE.Vector3(
           Math.cos(angle) *
             ORBIT.radius,
-
           0,
-
           Math.sin(angle) *
             ORBIT.radius
         )
@@ -590,7 +584,7 @@ function CategorySpace() {
       }
     )
 
-    // Interaction state
+    // Interaction
     const mouse = {
       x: 0,
       y: 0,
@@ -616,7 +610,6 @@ function CategorySpace() {
     let hoveredCategory = null
     let pausedUntil = 0
 
-    // Get category rotation
     const getCategoryRotation = (
       index
     ) => {
@@ -632,7 +625,6 @@ function CategorySpace() {
       )
     }
 
-    // Normalize angle
     const normalizeAngle = (
       angle
     ) => {
@@ -653,7 +645,6 @@ function CategorySpace() {
       return angle
     }
 
-    // Find nearest category
     const findNearestCategory = () => {
       let nearestIndex = 0
       let nearestDistance =
@@ -696,7 +687,6 @@ function CategorySpace() {
       return nearestIndex
     }
 
-    // Start snap
     const startSnap = () => {
       const index =
         findNearestCategory()
@@ -724,7 +714,6 @@ function CategorySpace() {
       snap.active = true
     }
 
-    // Pointer down
     const handlePointerDown = (
       event
     ) => {
@@ -744,7 +733,6 @@ function CategorySpace() {
       )
     }
 
-    // Pointer move
     const handlePointerMove = (
       event
     ) => {
@@ -846,7 +834,6 @@ function CategorySpace() {
         event.clientX
     }
 
-    // Pointer up
     const handlePointerUp = (
       event
     ) => {
@@ -907,14 +894,29 @@ function CategorySpace() {
         ) *
           0.15
 
-      // Earth formation progress
+      // Earth
       const earthProgress =
-        earth.material.uniforms.uProgress.value
+        earth.material.uniforms
+          .uProgress.value
 
       const isLoading =
         earthProgress < 1
 
-      // Camera view
+      // Logo appearance
+      if (
+        logoRef.current &&
+        earthProgress >= 0.65
+      ) {
+        logoRef.current.classList.remove(
+          'opacity-0'
+        )
+
+        logoRef.current.classList.add(
+          'opacity-100'
+        )
+      }
+
+      // Camera
       if (isLoading) {
         const introProgress =
           THREE.MathUtils.smoothstep(
@@ -944,22 +946,22 @@ function CategorySpace() {
             CAMERA.transitionSpeed
           )
       } else {
+        const topAmount =
+          Math.max(
+            0,
+            mouse.y
+          )
+
         const cameraTargetY =
           drag.active
-            ? Math.max(
-                0,
-                mouse.y
-              ) *
+            ? topAmount *
               CAMERA.topY
             : CAMERA.normalY
 
         const cameraTargetZ =
           drag.active
             ? CAMERA.normalZ -
-              Math.max(
-                0,
-                mouse.y
-              ) *
+              topAmount *
                 (CAMERA.normalZ -
                   CAMERA.topZ)
             : CAMERA.normalZ
@@ -977,6 +979,21 @@ function CategorySpace() {
             cameraTargetZ,
             CAMERA.transitionSpeed
           )
+
+        // Logo transparency
+        if (
+          logoRef.current &&
+          earthProgress >= 0.65
+        ) {
+          const logoOpacity =
+            drag.active &&
+            mouse.y > 0
+              ? '0.45'
+              : '1'
+
+          logoRef.current.style.opacity =
+            logoOpacity
+        }
       }
 
       camera.lookAt(
@@ -1141,7 +1158,14 @@ function CategorySpace() {
     <div
       ref={containerRef}
       className="category-space"
-    />
+    >
+      <img
+        ref={logoRef}
+        src="/logo.png"
+        alt="IDEA 3D"
+        className="pointer-events-none fixed left-1/2 top-3 z-10 w-56 -translate-x-1/2 select-none opacity-0 transition-opacity duration-500 sm:top-4 sm:w-72 md:top-5 md:w-80 lg:top-6 lg:w-96 xl:w-[28rem]"
+      />
+    </div>
   )
 }
 
