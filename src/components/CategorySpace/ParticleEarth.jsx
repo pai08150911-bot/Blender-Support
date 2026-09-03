@@ -9,7 +9,7 @@ const EARTH = {
   oceanParticleSize: 0.090,
 
   formationDuration: 5000,
-  rotationSpeed: 0.002,
+  rotationSpeed: 0.004,
 
   gridParticleSize: 0.012,
   gridParticleCount: 900,
@@ -87,7 +87,7 @@ const fragmentShader = `
 
     float alpha =
       mix(
-        0.16,
+        0.24,
         1.0,
         landMask
       );
