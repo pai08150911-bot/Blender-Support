@@ -33,9 +33,11 @@ const ORBIT = {
 
 const CAMERA = {
   normalY: 0,
-  topY: 2.4,
-
   normalZ: 6,
+
+  introZ: 2.3,
+
+  topY: 2.4,
   topZ: 5.5,
 
   transitionSpeed: 0.08,
@@ -108,7 +110,7 @@ function CategorySpace() {
     camera.position.set(
       0,
       CAMERA.normalY,
-      CAMERA.normalZ
+      CAMERA.introZ
     )
 
     camera.lookAt(0, 0, 0)
@@ -905,40 +907,77 @@ function CategorySpace() {
         ) *
           0.15
 
+      // Earth formation progress
+      const earthProgress =
+        earth.material.uniforms.uProgress.value
+
+      const isLoading =
+        earthProgress < 1
+
       // Camera view
-      const cameraTargetY =
-        drag.active
-          ? Math.max(
-              0,
-              mouse.y
-            ) *
-            CAMERA.topY
-          : CAMERA.normalY
+      if (isLoading) {
+        const introProgress =
+          THREE.MathUtils.smoothstep(
+            earthProgress,
+            0,
+            1
+          )
 
-      const cameraTargetZ =
-        drag.active
-          ? CAMERA.normalZ -
-            Math.max(
-              0,
-              mouse.y
-            ) *
-              (CAMERA.normalZ -
-                CAMERA.topZ)
-          : CAMERA.normalZ
+        const cameraTargetZ =
+          THREE.MathUtils.lerp(
+            CAMERA.introZ,
+            CAMERA.normalZ,
+            introProgress
+          )
 
-      camera.position.y =
-        THREE.MathUtils.lerp(
-          camera.position.y,
-          cameraTargetY,
-          CAMERA.transitionSpeed
-        )
+        camera.position.y =
+          THREE.MathUtils.lerp(
+            camera.position.y,
+            CAMERA.normalY,
+            CAMERA.transitionSpeed
+          )
 
-      camera.position.z =
-        THREE.MathUtils.lerp(
-          camera.position.z,
-          cameraTargetZ,
-          CAMERA.transitionSpeed
-        )
+        camera.position.z =
+          THREE.MathUtils.lerp(
+            camera.position.z,
+            cameraTargetZ,
+            CAMERA.transitionSpeed
+          )
+      } else {
+        const cameraTargetY =
+          drag.active
+            ? Math.max(
+                0,
+                mouse.y
+              ) *
+              CAMERA.topY
+            : CAMERA.normalY
+
+        const cameraTargetZ =
+          drag.active
+            ? CAMERA.normalZ -
+              Math.max(
+                0,
+                mouse.y
+              ) *
+                (CAMERA.normalZ -
+                  CAMERA.topZ)
+            : CAMERA.normalZ
+
+        camera.position.y =
+          THREE.MathUtils.lerp(
+            camera.position.y,
+            cameraTargetY,
+            CAMERA.transitionSpeed
+          )
+
+        camera.position.z =
+          THREE.MathUtils.lerp(
+            camera.position.z,
+            cameraTargetZ,
+            CAMERA.transitionSpeed
+          )
+      }
 
       camera.lookAt(
         0,
