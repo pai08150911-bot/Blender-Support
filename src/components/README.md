@@ -11,3 +11,7 @@
 
 ・CATEGORIES：
 分野オブジェクトの数を増やせたり、分野オブジェクトを管理している。
+
+・const PARTICLE_SPHERE：分野オブジェクトの粒子のサイズを調整可能。
+
+・const CATEGORIES：分野オブジェクトのカラーと名称を管理。

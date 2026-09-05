@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
 import createParticleEarth from './ParticleEarth'
 
@@ -57,55 +56,167 @@ const CONNECTION = {
   ],
 }
 
+const PARTICLE_SPHERE = {
+  particleCount: 900,
+  radius: 1,
+  size: 0.03,
+  opacity: 0.9,
+}
+
 const CATEGORIES = [
   {
     name: 'MATERIAL',
-    path: '/models/material.glb',
+    color: '#FF3B30',
   },
   {
     name: 'SCULPT',
-    path: '/models/sculpt.glb',
+    color: '#ffe838',
   },
   {
     name: 'SHADER',
-    path: '/models/shader.glb',
+    color: '#FF6A00',
   },
   {
     name: 'MODIFIER',
-    path: '/models/modifier.glb',
+    color: '#34C759',
   },
   {
     name: 'ANIMATION',
-    path: '/models/animation.glb',
+    color: '#007AFF',
   },
   {
     name: 'TEXTURE',
-    path: '/models/texture.glb',
+    color: '#5856D6',
   },
   {
     name: 'LIGHTING',
-    path: '/models/lighting.glb',
+    color: '#AF52DE',
   },
 ]
 
-const FALLBACK_PATH = '/models/material.glb'
+function createParticleSphere(
+  color,
+  category
+) {
+  const positions =
+    new Float32Array(
+      PARTICLE_SPHERE.particleCount * 3
+    )
+
+  for (
+    let i = 0;
+    i < PARTICLE_SPHERE.particleCount;
+    i += 1
+  ) {
+    const theta =
+      Math.random() * Math.PI * 2
+
+    const phi =
+      Math.acos(
+        2 * Math.random() - 1
+      )
+
+    const sinPhi =
+      Math.sin(phi)
+
+    const index = i * 3
+
+    positions[index] =
+      PARTICLE_SPHERE.radius *
+      sinPhi *
+      Math.cos(theta)
+
+    positions[index + 1] =
+      PARTICLE_SPHERE.radius *
+      Math.cos(phi)
+
+    positions[index + 2] =
+      PARTICLE_SPHERE.radius *
+      sinPhi *
+      Math.sin(theta)
+  }
+
+  const geometry =
+    new THREE.BufferGeometry()
+
+  geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(
+      positions,
+      3
+    )
+  )
+
+const particleTexture =
+  new THREE.TextureLoader().load(
+    'data:image/svg+xml,' +
+      encodeURIComponent(`
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r="30"
+            fill="white"
+          />
+        </svg>
+      `)
+  )
+
+  const material =
+    new THREE.PointsMaterial({
+      color,
+      size: PARTICLE_SPHERE.size,
+      transparent: true,
+      opacity:
+        PARTICLE_SPHERE.opacity,
+      map: particleTexture,
+      alphaTest: 0.01,
+      depthWrite: false,
+      blending:
+        THREE.AdditiveBlending,
+    })
+
+  const sphere =
+    new THREE.Points(
+      geometry,
+      material
+    )
+
+  sphere.scale.setScalar(
+    ORBIT.objectScale
+  )
+
+  sphere.userData.category =
+    category
+
+  return sphere
+}
 
 function CategorySpace() {
-  const containerRef = useRef(null)
-  const logoRef = useRef(null)
+  const containerRef =
+    useRef(null)
 
   useEffect(() => {
-    const container = containerRef.current
+    const container =
+      containerRef.current
 
-    const scene = new THREE.Scene()
+    // Scene
+    const scene =
+      new THREE.Scene()
 
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      container.clientWidth /
-        container.clientHeight,
-      0.1,
-      1000
-    )
+    // Camera
+    const camera =
+      new THREE.PerspectiveCamera(
+        60,
+        container.clientWidth /
+          container.clientHeight,
+        0.1,
+        1000
+      )
 
     camera.position.set(
       0,
@@ -113,8 +224,13 @@ function CategorySpace() {
       CAMERA.introZ
     )
 
-    camera.lookAt(0, 0, 0)
+    camera.lookAt(
+      0,
+      0,
+      0
+    )
 
+    // Renderer
     const renderer =
       new THREE.WebGLRenderer({
         antialias: true,
@@ -127,7 +243,10 @@ function CategorySpace() {
     )
 
     renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, 2)
+      Math.min(
+        window.devicePixelRatio,
+        2
+      )
     )
 
     renderer.domElement.style.touchAction =
@@ -147,7 +266,9 @@ function CategorySpace() {
         1.2
       )
 
-    scene.add(ambientLight)
+    scene.add(
+      ambientLight
+    )
 
     const keyLight =
       new THREE.DirectionalLight(
@@ -161,7 +282,9 @@ function CategorySpace() {
       5
     )
 
-    scene.add(keyLight)
+    scene.add(
+      keyLight
+    )
 
     const fillLight =
       new THREE.PointLight(
@@ -176,7 +299,9 @@ function CategorySpace() {
       3
     )
 
-    scene.add(fillLight)
+    scene.add(
+      fillLight
+    )
 
     // Particle texture
     const particleTexture =
@@ -265,11 +390,14 @@ function CategorySpace() {
     orbitGroup.rotation.x =
       ORBIT.tilt
 
-    scene.add(orbitGroup)
+    scene.add(
+      orbitGroup
+    )
 
     // Particle ring
     const ringGeometries = []
     const ringMaterials = []
+    const rings = []
 
     const particleColors = [
       new THREE.Color(0xffffff),
@@ -290,7 +418,8 @@ function CategorySpace() {
 
         for (
           let categoryIndex = 0;
-          categoryIndex < CATEGORIES.length;
+          categoryIndex <
+          CATEGORIES.length;
           categoryIndex += 1
         ) {
           const startAngle =
@@ -404,7 +533,8 @@ function CategorySpace() {
           new THREE.ShaderMaterial({
             uniforms: {
               uTexture: {
-                value: particleTexture,
+                value:
+                  particleTexture,
               },
             },
 
@@ -491,7 +621,9 @@ function CategorySpace() {
             ringMaterial
           )
 
-        orbitGroup.add(ring)
+        orbitGroup.add(
+          ring
+        )
 
         ringGeometries.push(
           ringGeometry
@@ -500,91 +632,59 @@ function CategorySpace() {
         ringMaterials.push(
           ringMaterial
         )
+
+        rings.push(
+          ring
+        )
       }
     )
 
     // Category positions
     const categoryPositions =
-      CATEGORIES.map((_, index) => {
-        const angle =
-          (index /
-            CATEGORIES.length) *
-          Math.PI *
-          2
+      CATEGORIES.map(
+        (_, index) => {
+          const angle =
+            (index /
+              CATEGORIES.length) *
+            Math.PI *
+            2
 
-        return new THREE.Vector3(
-          Math.cos(angle) *
-            ORBIT.radius,
-          0,
-          Math.sin(angle) *
-            ORBIT.radius
-        )
-      })
-
-    // Category objects
-    const loader =
-      new GLTFLoader()
-
-    const categoryObjects = []
-
-    const loadModel = (
-      path,
-      position,
-      category
-    ) => {
-      loader.load(
-        path,
-        (gltf) => {
-          const object =
-            gltf.scene
-
-          object.position.copy(
-            position
-          )
-
-          object.scale.setScalar(
-            ORBIT.objectScale
-          )
-
-          object.userData.category =
-            category
-
-          orbitGroup.add(
-            object
-          )
-
-          categoryObjects.push(
-            object
-          )
-        },
-        undefined,
-        () => {
-          if (
-            path === FALLBACK_PATH
-          ) {
-            return
-          }
-
-          loadModel(
-            FALLBACK_PATH,
-            position,
-            category
+          return new THREE.Vector3(
+            Math.cos(angle) *
+              ORBIT.radius,
+            0,
+            Math.sin(angle) *
+              ORBIT.radius
           )
         }
       )
-    }
+
+    // Category objects
+    const categoryObjects = []
 
     CATEGORIES.forEach(
       (category, index) => {
-        loadModel(
-          category.path,
-          categoryPositions[index],
-          category.name
+        const object =
+          createParticleSphere(
+            category.color,
+            category.name
+          )
+
+        object.position.copy(
+          categoryPositions[index]
+        )
+
+        orbitGroup.add(
+          object
+        )
+
+        categoryObjects.push(
+          object
         )
       }
     )
 
-    // Interaction
+    // Interaction state
     const mouse = {
       x: 0,
       y: 0,
@@ -610,83 +710,88 @@ function CategorySpace() {
     let hoveredCategory = null
     let pausedUntil = 0
 
-    const getCategoryRotation = (
-      index
-    ) => {
-      const angle =
-        (index /
-          CATEGORIES.length) *
-        Math.PI *
-        2
+    // Get category rotation
+    const getCategoryRotation =
+      (index) => {
+        const angle =
+          (index /
+            CATEGORIES.length) *
+          Math.PI *
+          2
 
-      return (
-        angle -
-        Math.PI / 2
-      )
-    }
-
-    const normalizeAngle = (
-      angle
-    ) => {
-      while (
-        angle > Math.PI
-      ) {
-        angle -=
-          Math.PI * 2
+        return (
+          angle -
+          Math.PI / 2
+        )
       }
 
-      while (
-        angle < -Math.PI
-      ) {
-        angle +=
-          Math.PI * 2
-      }
-
-      return angle
-    }
-
-    const findNearestCategory = () => {
-      let nearestIndex = 0
-      let nearestDistance =
-        Infinity
-
-      categoryPositions.forEach(
-        (position, index) => {
-          const angle =
-            Math.atan2(
-              position.z,
-              position.x
-            )
-
-          const target =
-            getCategoryRotation(
-              index
-            )
-
-          const distance =
-            Math.abs(
-              normalizeAngle(
-                target -
-                  orbitGroup.rotation.y
-              )
-            )
-
-          if (
-            distance <
-            nearestDistance
-          ) {
-            nearestDistance =
-              distance
-
-            nearestIndex =
-              index
-          }
+    // Normalize angle
+    const normalizeAngle =
+      (angle) => {
+        while (
+          angle > Math.PI
+        ) {
+          angle -=
+            Math.PI * 2
         }
-      )
 
-      return nearestIndex
-    }
+        while (
+          angle < -Math.PI
+        ) {
+          angle +=
+            Math.PI * 2
+        }
 
+        return angle
+      }
+
+    // Find nearest category
+    const findNearestCategory =
+      () => {
+        let nearestIndex = 0
+        let nearestDistance =
+          Infinity
+
+        categoryPositions.forEach(
+          (position, index) => {
+            const angle =
+              Math.atan2(
+                position.z,
+                position.x
+              )
+
+            const target =
+              getCategoryRotation(
+                index
+              )
+
+            const distance =
+              Math.abs(
+                normalizeAngle(
+                  target -
+                    orbitGroup
+                      .rotation
+                      .y
+                )
+              )
+
+            if (
+              distance <
+              nearestDistance
+            ) {
+              nearestDistance =
+                distance
+
+              nearestIndex =
+                index
+            }
+          }
+        )
+
+        return nearestIndex
+      }
+
+    // Start snap
     const startSnap = () => {
       const index =
         findNearestCategory()
@@ -714,140 +819,157 @@ function CategorySpace() {
       snap.active = true
     }
 
-    const handlePointerDown = (
-      event
-    ) => {
-      drag.active = true
+    // Pointer down
+    const handlePointerDown =
+      (event) => {
+        drag.active = true
 
-      drag.previousX =
-        event.clientX
+        drag.previousX =
+          event.clientX
 
-      snap.active = false
-      pausedUntil = 0
+        snap.active = false
+        pausedUntil = 0
 
-      renderer.domElement.style.cursor =
-        'grabbing'
+        renderer
+          .domElement
+          .style
+          .cursor =
+          'grabbing'
 
-      renderer.domElement.setPointerCapture(
-        event.pointerId
-      )
-    }
+        renderer
+          .domElement
+          .setPointerCapture(
+            event.pointerId
+          )
+      }
 
-    const handlePointerMove = (
-      event
-    ) => {
-      mouse.x =
-        (event.clientX /
-          window.innerWidth) *
-          2 -
-        1
+    // Pointer move
+    const handlePointerMove =
+      (event) => {
+        mouse.x =
+          (event.clientX /
+            window.innerWidth) *
+            2 -
+          1
 
-      mouse.y =
-        (event.clientY /
-          window.innerHeight) *
-          2 -
-        1
+        mouse.y =
+          (event.clientY /
+            window.innerHeight) *
+            2 -
+          1
 
-      pointer.x =
-        (event.clientX /
-          renderer.domElement.clientWidth) *
-          2 -
-        1
+        pointer.x =
+          (event.clientX /
+            renderer
+              .domElement
+              .clientWidth) *
+            2 -
+          1
 
-      pointer.y =
-        -(event.clientY /
-          renderer.domElement.clientHeight) *
-          2 +
-        1
+        pointer.y =
+          -(event.clientY /
+            renderer
+              .domElement
+              .clientHeight) *
+            2 +
+          1
 
-      raycaster.setFromCamera(
-        pointer,
-        camera
-      )
-
-      const intersections =
-        raycaster.intersectObjects(
-          categoryObjects,
-          true
+        raycaster.setFromCamera(
+          pointer,
+          camera
         )
 
-      let selectedCategory = null
+        const intersections =
+          raycaster.intersectObjects(
+            categoryObjects,
+            true
+          )
 
-      if (
-        intersections.length > 0
-      ) {
-        let current =
-          intersections[0].object
+        let selectedCategory =
+          null
 
-        while (
-          current &&
-          !current.userData.category
+        if (
+          intersections.length > 0
         ) {
-          current =
-            current.parent
+          let current =
+            intersections[0]
+              .object
+
+          while (
+            current &&
+            !current.userData
+              .category
+          ) {
+            current =
+              current.parent
+          }
+
+          selectedCategory =
+            current
         }
 
-        selectedCategory =
-          current
+        if (
+          selectedCategory &&
+          selectedCategory !==
+            hoveredCategory
+        ) {
+          hoveredCategory =
+            selectedCategory
+
+          pausedUntil =
+            Date.now() +
+            ORBIT.pauseDuration
+        }
+
+        if (
+          !selectedCategory
+        ) {
+          hoveredCategory =
+            null
+        }
+
+        if (!drag.active) {
+          return
+        }
+
+        const deltaX =
+          event.clientX -
+          drag.previousX
+
+        const rotation =
+          THREE.MathUtils.clamp(
+            deltaX *
+              ORBIT.dragSensitivity,
+            -ORBIT.maxDragStep,
+            ORBIT.maxDragStep
+          )
+
+        orbitGroup.rotation.y +=
+          rotation
+
+        drag.previousX =
+          event.clientX
       }
 
-      if (
-        selectedCategory &&
-        selectedCategory !==
-          hoveredCategory
-      ) {
-        hoveredCategory =
-          selectedCategory
+    // Pointer up
+    const handlePointerUp =
+      (event) => {
+        drag.active = false
 
-        pausedUntil =
-          Date.now() +
-          ORBIT.pauseDuration
+        renderer
+          .domElement
+          .style
+          .cursor =
+          'grab'
+
+        renderer
+          .domElement
+          .releasePointerCapture(
+            event.pointerId
+          )
+
+        startSnap()
       }
-
-      if (
-        !selectedCategory
-      ) {
-        hoveredCategory =
-          null
-      }
-
-      if (!drag.active) {
-        return
-      }
-
-      const deltaX =
-        event.clientX -
-        drag.previousX
-
-      const rotation =
-        THREE.MathUtils.clamp(
-          deltaX *
-            ORBIT.dragSensitivity,
-          -ORBIT.maxDragStep,
-          ORBIT.maxDragStep
-        )
-
-      orbitGroup.rotation.y +=
-        rotation
-
-      drag.previousX =
-        event.clientX
-    }
-
-    const handlePointerUp = (
-      event
-    ) => {
-      drag.active = false
-
-      renderer.domElement.style.cursor =
-        'grab'
-
-      renderer.domElement.releasePointerCapture(
-        event.pointerId
-      )
-
-      startSnap()
-    }
 
     renderer.domElement.addEventListener(
       'pointerdown',
@@ -894,27 +1016,15 @@ function CategorySpace() {
         ) *
           0.15
 
-      // Earth
+      // Earth formation
       const earthProgress =
-        earth.material.uniforms
-          .uProgress.value
+        earth.material
+          .uniforms
+          .uProgress
+          .value
 
       const isLoading =
         earthProgress < 1
-
-      // Logo appearance
-      if (
-        logoRef.current &&
-        earthProgress >= 0.65
-      ) {
-        logoRef.current.classList.remove(
-          'opacity-0'
-        )
-
-        logoRef.current.classList.add(
-          'opacity-100'
-        )
-      }
 
       // Camera
       if (isLoading) {
@@ -946,22 +1056,22 @@ function CategorySpace() {
             CAMERA.transitionSpeed
           )
       } else {
-        const topAmount =
-          Math.max(
-            0,
-            mouse.y
-          )
-
         const cameraTargetY =
           drag.active
-            ? topAmount *
+            ? Math.max(
+                0,
+                mouse.y
+              ) *
               CAMERA.topY
             : CAMERA.normalY
 
         const cameraTargetZ =
           drag.active
             ? CAMERA.normalZ -
-              topAmount *
+              Math.max(
+                0,
+                mouse.y
+              ) *
                 (CAMERA.normalZ -
                   CAMERA.topZ)
             : CAMERA.normalZ
@@ -979,21 +1089,6 @@ function CategorySpace() {
             cameraTargetZ,
             CAMERA.transitionSpeed
           )
-
-        // Logo transparency
-        if (
-          logoRef.current &&
-          earthProgress >= 0.65
-        ) {
-          const logoOpacity =
-            drag.active &&
-            mouse.y > 0
-              ? '0.45'
-              : '1'
-
-          logoRef.current.style.opacity =
-            logoOpacity
-        }
       }
 
       camera.lookAt(
@@ -1013,8 +1108,9 @@ function CategorySpace() {
           ORBIT.snapSpeed
 
         if (
-          Math.abs(difference) <
-          0.001
+          Math.abs(
+            difference
+          ) < 0.001
         ) {
           orbitGroup.rotation.y =
             snap.targetRotation
@@ -1048,23 +1144,24 @@ function CategorySpace() {
     )
 
     // Resize
-    const handleResize = () => {
-      const width =
-        container.clientWidth
+    const handleResize =
+      () => {
+        const width =
+          container.clientWidth
 
-      const height =
-        container.clientHeight
+        const height =
+          container.clientHeight
 
-      camera.aspect =
-        width / height
+        camera.aspect =
+          width / height
 
-      camera.updateProjectionMatrix()
+        camera.updateProjectionMatrix()
 
-      renderer.setSize(
-        width,
-        height
-      )
-    }
+        renderer.setSize(
+          width,
+          height
+        )
+      }
 
     window.addEventListener(
       'resize',
@@ -1099,28 +1196,8 @@ function CategorySpace() {
 
       categoryObjects.forEach(
         (object) => {
-          object.traverse(
-            (child) => {
-              if (child.geometry) {
-                child.geometry.dispose()
-              }
-
-              if (child.material) {
-                const materials =
-                  Array.isArray(
-                    child.material
-                  )
-                    ? child.material
-                    : [child.material]
-
-                materials.forEach(
-                  (material) => {
-                    material.dispose()
-                  }
-                )
-              }
-            }
-          )
+          object.geometry.dispose()
+          object.material.dispose()
         }
       )
 
@@ -1160,10 +1237,9 @@ function CategorySpace() {
       className="category-space"
     >
       <img
-        ref={logoRef}
         src="/logo.png"
         alt="IDEA 3D"
-        className="pointer-events-none fixed left-1/2 top-3 z-10 w-56 -translate-x-1/2 select-none opacity-0 transition-opacity duration-500 sm:top-4 sm:w-72 md:top-5 md:w-80 lg:top-6 lg:w-96 xl:w-[28rem]"
+        className="fixed left-1/2 top-3 z-10 w-40 -translate-x-1/2 select-none pointer-events-none sm:w-56 md:w-64 lg:w-72 xl:w-80"
       />
     </div>
   )
