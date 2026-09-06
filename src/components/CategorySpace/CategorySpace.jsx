@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react'
+import {
+  useEffect,
+  useRef,
+} from 'react'
 import * as THREE from 'three'
 import createParticleEarth from './ParticleEarth'
 
@@ -28,6 +31,11 @@ const ORBIT = {
   snapSpeed: 0.08,
 
   pauseDuration: 2000,
+
+  centerThreshold:
+    THREE.MathUtils.degToRad(8),
+
+  frontCategoryCount: 3,
 }
 
 const CAMERA = {
@@ -38,6 +46,9 @@ const CAMERA = {
 
   topY: 2.4,
   topZ: 5.5,
+
+  focusY: 0,
+  focusZ: 4.5,
 
   transitionSpeed: 0.08,
 }
@@ -67,30 +78,58 @@ const CATEGORIES = [
   {
     name: 'MATERIAL',
     color: '#FF3B30',
+    description:
+      'マテリアルの基礎から、質感を表現するための設定まで学びます。',
+    image: '/images/material.jpg',
+    link: '/material',
   },
   {
     name: 'SCULPT',
     color: '#ffe838',
+    description:
+      'スカルプトを使って、モデルの形状を細かく作り込みます。',
+    image: '/images/sculpt.jpg',
+    link: '/sculpt',
   },
   {
     name: 'SHADER',
     color: '#FF6A00',
+    description:
+      'シェーダーを使って、光や質感を自由に表現します。',
+    image: '/images/shader.jpg',
+    link: '/shader',
   },
   {
     name: 'MODIFIER',
     color: '#34C759',
+    description:
+      'モディファイアを使って、モデルを効率的に加工します。',
+    image: '/images/modifier.jpg',
+    link: '/modifier',
   },
   {
     name: 'ANIMATION',
     color: '#007AFF',
+    description:
+      'アニメーションの基本から、オブジェクトを動かす方法まで学びます。',
+    image: '/images/animation.jpg',
+    link: '/animation',
   },
   {
     name: 'TEXTURE',
     color: '#5856D6',
+    description:
+      'テクスチャを使って、モデルに細かな表現を加えます。',
+    image: '/images/texture.jpg',
+    link: '/texture',
   },
   {
     name: 'LIGHTING',
     color: '#AF52DE',
+    description:
+      'ライティングを使って、シーン全体の雰囲気を作ります。',
+    image: '/images/lighting.jpg',
+    link: '/lighting',
   },
 ]
 
@@ -109,7 +148,9 @@ function createParticleSphere(
     i += 1
   ) {
     const theta =
-      Math.random() * Math.PI * 2
+      Math.random() *
+      Math.PI *
+      2
 
     const phi =
       Math.acos(
@@ -119,7 +160,8 @@ function createParticleSphere(
     const sinPhi =
       Math.sin(phi)
 
-    const index = i * 3
+    const index =
+      i * 3
 
     positions[index] =
       PARTICLE_SPHERE.radius *
@@ -147,24 +189,24 @@ function createParticleSphere(
     )
   )
 
-const particleTexture =
-  new THREE.TextureLoader().load(
-    'data:image/svg+xml,' +
-      encodeURIComponent(`
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="64"
-          height="64"
-        >
-          <circle
-            cx="32"
-            cy="32"
-            r="30"
-            fill="white"
-          />
-        </svg>
-      `)
-  )
+  const particleTexture =
+    new THREE.TextureLoader().load(
+      'data:image/svg+xml,' +
+        encodeURIComponent(`
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="64"
+            height="64"
+          >
+            <circle
+              cx="32"
+              cy="32"
+              r="30"
+              fill="white"
+            />
+          </svg>
+        `)
+    )
 
   const material =
     new THREE.PointsMaterial({
@@ -200,15 +242,28 @@ function CategorySpace() {
   const containerRef =
     useRef(null)
 
+  const hologramRef =
+    useRef(null)
+
+  const infoRef =
+    useRef(null)
+
+  const imageRef =
+    useRef(null)
+
+  const buttonRef =
+    useRef(null)
+
   useEffect(() => {
     const container =
       containerRef.current
 
-    // Scene
+    const hologram =
+      hologramRef.current
+
     const scene =
       new THREE.Scene()
 
-    // Camera
     const camera =
       new THREE.PerspectiveCamera(
         60,
@@ -230,7 +285,6 @@ function CategorySpace() {
       0
     )
 
-    // Renderer
     const renderer =
       new THREE.WebGLRenderer({
         antialias: true,
@@ -259,7 +313,6 @@ function CategorySpace() {
       renderer.domElement
     )
 
-    // Lights
     const ambientLight =
       new THREE.AmbientLight(
         0xffffff,
@@ -303,7 +356,6 @@ function CategorySpace() {
       fillLight
     )
 
-    // Particle texture
     const particleTexture =
       new THREE.TextureLoader().load(
         'data:image/svg+xml,' +
@@ -323,7 +375,6 @@ function CategorySpace() {
           `)
       )
 
-    // Stars
     const starGeometry =
       new THREE.BufferGeometry()
 
@@ -377,13 +428,11 @@ function CategorySpace() {
 
     scene.add(stars)
 
-    // Earth
     const earth =
       createParticleEarth()
 
     scene.add(earth)
 
-    // Orbit group
     const orbitGroup =
       new THREE.Group()
 
@@ -394,10 +443,8 @@ function CategorySpace() {
       orbitGroup
     )
 
-    // Particle ring
     const ringGeometries = []
     const ringMaterials = []
-    const rings = []
 
     const particleColors = [
       new THREE.Color(0xffffff),
@@ -632,14 +679,9 @@ function CategorySpace() {
         ringMaterials.push(
           ringMaterial
         )
-
-        rings.push(
-          ring
-        )
       }
     )
 
-    // Category positions
     const categoryPositions =
       CATEGORIES.map(
         (_, index) => {
@@ -659,7 +701,6 @@ function CategorySpace() {
         }
       )
 
-    // Category objects
     const categoryObjects = []
 
     CATEGORIES.forEach(
@@ -684,7 +725,6 @@ function CategorySpace() {
       }
     )
 
-    // Interaction state
     const mouse = {
       x: 0,
       y: 0,
@@ -696,9 +736,16 @@ function CategorySpace() {
     const raycaster =
       new THREE.Raycaster()
 
+    raycaster.params.Points.threshold =
+      0.15
+
     const drag = {
       active: false,
       previousX: 0,
+      startX: 0,
+      startY: 0,
+      moved: false,
+      pressedCategory: null,
     }
 
     const snap = {
@@ -708,156 +755,17 @@ function CategorySpace() {
     }
 
     let hoveredCategory = null
+    let hologramHovered = false
     let pausedUntil = 0
 
-    // Get category rotation
-    const getCategoryRotation =
-      (index) => {
-        const angle =
-          (index /
-            CATEGORIES.length) *
-          Math.PI *
-          2
+    let displayedCategory = null
+    let hologramVisible = false
 
-        return (
-          angle -
-          Math.PI / 2
-        )
-      }
+    let focusedCategoryIndex = null
+    let focusActive = false
 
-    // Normalize angle
-    const normalizeAngle =
-      (angle) => {
-        while (
-          angle > Math.PI
-        ) {
-          angle -=
-            Math.PI * 2
-        }
-
-        while (
-          angle < -Math.PI
-        ) {
-          angle +=
-            Math.PI * 2
-        }
-
-        return angle
-      }
-
-    // Find nearest category
-    const findNearestCategory =
-      () => {
-        let nearestIndex = 0
-        let nearestDistance =
-          Infinity
-
-        categoryPositions.forEach(
-          (position, index) => {
-            const angle =
-              Math.atan2(
-                position.z,
-                position.x
-              )
-
-            const target =
-              getCategoryRotation(
-                index
-              )
-
-            const distance =
-              Math.abs(
-                normalizeAngle(
-                  target -
-                    orbitGroup
-                      .rotation
-                      .y
-                )
-              )
-
-            if (
-              distance <
-              nearestDistance
-            ) {
-              nearestDistance =
-                distance
-
-              nearestIndex =
-                index
-            }
-          }
-        )
-
-        return nearestIndex
-      }
-
-    // Start snap
-    const startSnap = () => {
-      const index =
-        findNearestCategory()
-
-      let target =
-        getCategoryRotation(
-          index
-        )
-
-      const current =
-        orbitGroup.rotation.y
-
-      target =
-        current +
-        normalizeAngle(
-          target - current
-        )
-
-      snap.targetRotation =
-        target
-
-      snap.categoryIndex =
-        index
-
-      snap.active = true
-    }
-
-    // Pointer down
-    const handlePointerDown =
+    const getCategoryFromPointer =
       (event) => {
-        drag.active = true
-
-        drag.previousX =
-          event.clientX
-
-        snap.active = false
-        pausedUntil = 0
-
-        renderer
-          .domElement
-          .style
-          .cursor =
-          'grabbing'
-
-        renderer
-          .domElement
-          .setPointerCapture(
-            event.pointerId
-          )
-      }
-
-    // Pointer move
-    const handlePointerMove =
-      (event) => {
-        mouse.x =
-          (event.clientX /
-            window.innerWidth) *
-            2 -
-          1
-
-        mouse.y =
-          (event.clientY /
-            window.innerHeight) *
-            2 -
-          1
-
         pointer.x =
           (event.clientX /
             renderer
@@ -885,51 +793,445 @@ function CategorySpace() {
             true
           )
 
-        let selectedCategory =
+        if (
+          intersections.length === 0
+        ) {
+          return null
+        }
+
+        let current =
+          intersections[0].object
+
+        while (
+          current &&
+          !current.userData.category
+        ) {
+          current =
+            current.parent
+        }
+
+        return current
+      }
+
+    const getCategoryRotation =
+      (index) => {
+        const angle =
+          (index /
+            CATEGORIES.length) *
+          Math.PI *
+          2
+
+        return (
+          angle -
+          Math.PI / 2
+        )
+      }
+
+    const normalizeAngle =
+      (angle) => {
+        while (
+          angle > Math.PI
+        ) {
+          angle -=
+            Math.PI * 2
+        }
+
+        while (
+          angle < -Math.PI
+        ) {
+          angle +=
+            Math.PI * 2
+        }
+
+        return angle
+      }
+
+    const getCategoryDistance =
+      (index) => {
+        const target =
+          getCategoryRotation(
+            index
+          )
+
+        return Math.abs(
+          normalizeAngle(
+            target -
+              orbitGroup.rotation.y
+          )
+        )
+      }
+
+    const getFrontCategories =
+      () => {
+        const categories =
+          CATEGORIES.map(
+            (_, index) => ({
+              index,
+              distance:
+                getCategoryDistance(
+                  index
+                ),
+            })
+          )
+
+        categories.sort(
+          (a, b) =>
+            a.distance -
+            b.distance
+        )
+
+        return categories
+          .slice(
+            0,
+            ORBIT.frontCategoryCount
+          )
+          .map(
+            (category) =>
+              category.index
+          )
+      }
+
+    const findNearestCategory =
+      () => {
+        let nearestIndex = 0
+        let nearestDistance =
+          Infinity
+
+        CATEGORIES.forEach(
+          (_, index) => {
+            const distance =
+              getCategoryDistance(
+                index
+              )
+
+            if (
+              distance <
+              nearestDistance
+            ) {
+              nearestDistance =
+                distance
+
+              nearestIndex =
+                index
+            }
+          }
+        )
+
+        return nearestIndex
+      }
+
+    const isFrontCategory =
+      (categoryObject) => {
+        if (!categoryObject) {
+          return false
+        }
+
+        const index =
+          categoryObjects.indexOf(
+            categoryObject
+          )
+
+        if (index === -1) {
+          return false
+        }
+
+        return getFrontCategories().includes(
+          index
+        )
+      }
+
+    const showHologram = (
+      categoryIndex
+    ) => {
+      const category =
+        CATEGORIES[categoryIndex]
+
+      if (!category) {
+        return
+      }
+
+      if (
+        displayedCategory ===
+        category.name
+      ) {
+        if (hologram) {
+          hologram.classList.remove(
+            'opacity-0',
+            'pointer-events-none'
+          )
+
+          hologram.classList.add(
+            'opacity-100',
+            'pointer-events-auto'
+          )
+        }
+
+        hologramVisible = true
+        return
+      }
+
+      displayedCategory =
+        category.name
+
+      if (infoRef.current) {
+        infoRef.current.textContent =
+          category.description
+      }
+
+      if (imageRef.current) {
+        imageRef.current.src =
+          category.image
+
+        imageRef.current.alt =
+          `${category.name} preview`
+      }
+
+      if (buttonRef.current) {
+        buttonRef.current.href =
+          category.link
+      }
+
+      if (hologram) {
+        hologram.classList.remove(
+          'opacity-0',
+          'pointer-events-none'
+        )
+
+        hologram.classList.add(
+          'opacity-100',
+          'pointer-events-auto'
+        )
+
+        hologramVisible = true
+      }
+    }
+
+    const hideHologram = () => {
+      if (!hologramVisible) {
+        return
+      }
+
+      if (hologram) {
+        hologram.classList.remove(
+          'opacity-100',
+          'pointer-events-auto',
+          'hologram-focused'
+        )
+
+        hologram.classList.add(
+          'opacity-0',
+          'pointer-events-none'
+        )
+      }
+
+      hologramVisible = false
+      displayedCategory = null
+      hologramHovered = false
+    }
+
+    const startSnapToCategory =
+      (categoryIndex) => {
+        let target =
+          getCategoryRotation(
+            categoryIndex
+          )
+
+        const current =
+          orbitGroup.rotation.y
+
+        target =
+          current +
+          normalizeAngle(
+            target - current
+          )
+
+        snap.targetRotation =
+          target
+
+        snap.categoryIndex =
+          categoryIndex
+
+        snap.active = true
+        pausedUntil = 0
+      }
+
+    const setFocus =
+      (active) => {
+        focusActive =
+          active
+
+        if (hologram) {
+          hologram.classList.toggle(
+            'hologram-focused',
+            active
+          )
+        }
+      }
+
+    const handleCategoryClick =
+      (categoryObject) => {
+        if (
+          !isFrontCategory(
+            categoryObject
+          )
+        ) {
+          return
+        }
+
+        const index =
+          categoryObjects.indexOf(
+            categoryObject
+          )
+
+        if (index === -1) {
+          return
+        }
+
+        const distance =
+          getCategoryDistance(
+            index
+          )
+
+        const isCenter =
+          distance <
+          ORBIT.centerThreshold
+
+        if (!isCenter) {
+          setFocus(false)
+          startSnapToCategory(
+            index
+          )
+          return
+        }
+
+        if (
+          focusedCategoryIndex ===
+          index
+        ) {
+          setFocus(false)
+          focusedCategoryIndex =
+            null
+          return
+        }
+
+        focusedCategoryIndex =
+          index
+
+        snap.active = false
+        pausedUntil = 0
+
+        showHologram(index)
+        setFocus(true)
+      }
+
+    const clearFocus =
+      () => {
+        focusedCategoryIndex =
           null
 
+        setFocus(false)
+      }
+
+    const handlePointerDown =
+      (event) => {
+        const category =
+          getCategoryFromPointer(
+            event
+          )
+
+        const frontCategory =
+          isFrontCategory(
+            category
+          )
+            ? category
+            : null
+
+        drag.active = true
+        drag.previousX =
+          event.clientX
+
+        drag.startX =
+          event.clientX
+
+        drag.startY =
+          event.clientY
+
+        drag.moved = false
+        drag.pressedCategory =
+          frontCategory
+
+        snap.active = false
+
         if (
-          intersections.length > 0
+          focusedCategoryIndex !==
+          null
         ) {
-          let current =
-            intersections[0]
-              .object
-
-          while (
-            current &&
-            !current.userData
-              .category
-          ) {
-            current =
-              current.parent
-          }
-
-          selectedCategory =
-            current
+          clearFocus()
         }
 
-        if (
-          selectedCategory &&
-          selectedCategory !==
-            hoveredCategory
-        ) {
-          hoveredCategory =
-            selectedCategory
+        renderer
+          .domElement
+          .style
+          .cursor =
+          'grabbing'
 
-          pausedUntil =
-            Date.now() +
-            ORBIT.pauseDuration
-        }
+        renderer
+          .domElement
+          .setPointerCapture(
+            event.pointerId
+          )
+      }
 
-        if (
-          !selectedCategory
-        ) {
-          hoveredCategory =
-            null
-        }
+    const handlePointerMove =
+      (event) => {
+        mouse.x =
+          (event.clientX /
+            window.innerWidth) *
+            2 -
+          1
+
+        mouse.y =
+          (event.clientY /
+            window.innerHeight) *
+            2 -
+          1
+
+        const category =
+          getCategoryFromPointer(
+            event
+          )
+
+        const frontCategory =
+          isFrontCategory(
+            category
+          )
+            ? category
+            : null
+
+        hoveredCategory =
+          frontCategory
 
         if (!drag.active) {
           return
+        }
+
+        const distanceX =
+          Math.abs(
+            event.clientX -
+              drag.startX
+          )
+
+        const distanceY =
+          Math.abs(
+            event.clientY -
+              drag.startY
+          )
+
+        if (
+          distanceX > 4 ||
+          distanceY > 4
+        ) {
+          drag.moved = true
         }
 
         const deltaX =
@@ -951,10 +1253,17 @@ function CategorySpace() {
           event.clientX
       }
 
-    // Pointer up
     const handlePointerUp =
       (event) => {
+        const pressedCategory =
+          drag.pressedCategory
+
+        const wasClick =
+          !drag.moved
+
         drag.active = false
+        drag.pressedCategory =
+          null
 
         renderer
           .domElement
@@ -962,13 +1271,45 @@ function CategorySpace() {
           .cursor =
           'grab'
 
-        renderer
-          .domElement
-          .releasePointerCapture(
-            event.pointerId
+        if (
+          renderer
+            .domElement
+            .hasPointerCapture(
+              event.pointerId
+            )
+        ) {
+          renderer
+            .domElement
+            .releasePointerCapture(
+              event.pointerId
+            )
+        }
+
+        if (
+          wasClick &&
+          pressedCategory
+        ) {
+          handleCategoryClick(
+            pressedCategory
           )
 
-        startSnap()
+          return
+        }
+
+        if (wasClick) {
+          clearFocus()
+          hideHologram()
+          return
+        }
+
+        if (drag.moved) {
+          const nearestIndex =
+            findNearestCategory()
+
+          startSnapToCategory(
+            nearestIndex
+          )
+        }
       }
 
     renderer.domElement.addEventListener(
@@ -986,15 +1327,59 @@ function CategorySpace() {
       handlePointerUp
     )
 
-    // Animation
+    const hologramPanels =
+      hologram
+        ? hologram.querySelectorAll(
+            '.holo-panel'
+          )
+        : []
+
+    const handleHologramEnter =
+      () => {
+        hologramHovered = true
+      }
+
+    const handleHologramLeave =
+      () => {
+        hologramHovered = false
+      }
+
+    hologramPanels.forEach(
+      (panel) => {
+        panel.addEventListener(
+          'pointerenter',
+          handleHologramEnter
+        )
+
+        panel.addEventListener(
+          'pointerleave',
+          handleHologramLeave
+        )
+      }
+    )
+
+    if (buttonRef.current) {
+      buttonRef.current.addEventListener(
+        'pointerenter',
+        handleHologramEnter
+      )
+
+      buttonRef.current.addEventListener(
+        'pointerleave',
+        handleHologramLeave
+      )
+    }
+
     const clock =
       new THREE.Clock()
+
+    const projectedPosition =
+      new THREE.Vector3()
 
     const animate = () => {
       const elapsedTime =
         clock.getElapsedTime()
 
-      // Stars
       stars.position.x =
         mouse.x *
         SPACE.moveX
@@ -1016,7 +1401,6 @@ function CategorySpace() {
         ) *
           0.15
 
-      // Earth formation
       const earthProgress =
         earth.material
           .uniforms
@@ -1026,7 +1410,6 @@ function CategorySpace() {
       const isLoading =
         earthProgress < 1
 
-      // Camera
       if (isLoading) {
         const introProgress =
           THREE.MathUtils.smoothstep(
@@ -1063,7 +1446,9 @@ function CategorySpace() {
                 mouse.y
               ) *
               CAMERA.topY
-            : CAMERA.normalY
+            : focusActive
+              ? CAMERA.focusY
+              : CAMERA.normalY
 
         const cameraTargetZ =
           drag.active
@@ -1074,7 +1459,9 @@ function CategorySpace() {
               ) *
                 (CAMERA.normalZ -
                   CAMERA.topZ)
-            : CAMERA.normalZ
+            : focusActive
+              ? CAMERA.focusZ
+              : CAMERA.normalZ
 
         camera.position.y =
           THREE.MathUtils.lerp(
@@ -1097,7 +1484,6 @@ function CategorySpace() {
         0
       )
 
-      // Snap
       if (snap.active) {
         const difference =
           snap.targetRotation -
@@ -1123,14 +1509,120 @@ function CategorySpace() {
         }
       }
 
-      // Automatic rotation
-      if (
+      const isObjectHovered =
+        hoveredCategory !== null
+
+      const canAutoRotate =
         !drag.active &&
         !snap.active &&
+        !isObjectHovered &&
+        !hologramHovered &&
+        !focusActive &&
         Date.now() >= pausedUntil
-      ) {
+
+      if (canAutoRotate) {
         orbitGroup.rotation.y +=
           SPACE.rotationSpeed
+      }
+
+      if (!isLoading) {
+        const nearestIndex =
+          findNearestCategory()
+
+        const distance =
+          getCategoryDistance(
+            nearestIndex
+          )
+
+        const showDistance =
+          THREE.MathUtils.degToRad(
+            28
+          )
+
+        const hideDistance =
+          THREE.MathUtils.degToRad(
+            45
+          )
+
+        if (
+          focusActive &&
+          focusedCategoryIndex !==
+            null
+        ) {
+          showHologram(
+            focusedCategoryIndex
+          )
+        } else if (
+          !drag.active &&
+          distance < showDistance
+        ) {
+          showHologram(
+            nearestIndex
+          )
+        }
+
+        if (
+          drag.active ||
+          (
+            !focusActive &&
+            distance > hideDistance
+          )
+        ) {
+          hideHologram()
+        }
+
+        if (
+          hologramVisible &&
+          displayedCategory
+        ) {
+          const index =
+            CATEGORIES.findIndex(
+              (category) =>
+                category.name ===
+                displayedCategory
+            )
+
+          if (index !== -1) {
+            const object =
+              categoryObjects[index]
+
+            projectedPosition.copy(
+              object.position
+            )
+
+            orbitGroup.localToWorld(
+              projectedPosition
+            )
+
+            projectedPosition.project(
+              camera
+            )
+
+            const width =
+              container.clientWidth
+
+            const height =
+              container.clientHeight
+
+            const x =
+              (projectedPosition.x *
+                0.5 +
+                0.5) *
+              width
+
+            const y =
+              (-projectedPosition.y *
+                0.5 +
+                0.5) *
+              height
+
+            hologram.style.left =
+              `${x}px`
+
+            hologram.style.top =
+              `${y}px`
+          }
+        }
       }
 
       renderer.render(
@@ -1143,7 +1635,6 @@ function CategorySpace() {
       animate
     )
 
-    // Resize
     const handleResize =
       () => {
         const width =
@@ -1168,7 +1659,6 @@ function CategorySpace() {
       handleResize
     )
 
-    // Cleanup
     return () => {
       window.removeEventListener(
         'resize',
@@ -1190,6 +1680,37 @@ function CategorySpace() {
         handlePointerUp
       )
 
+      hologramPanels.forEach(
+        (panel) => {
+          panel.removeEventListener(
+            'pointerenter',
+            handleHologramEnter
+          )
+
+          panel.removeEventListener(
+            'pointerleave',
+            handleHologramLeave
+          )
+        }
+      )
+
+      if (buttonRef.current) {
+        buttonRef.current.removeEventListener(
+          'pointerenter',
+          handleHologramEnter
+        )
+
+        buttonRef.current.removeEventListener(
+          'pointerleave',
+          handleHologramLeave
+        )
+      }
+
+      window.removeEventListener(
+        'resize',
+        handleResize
+      )
+
       renderer.setAnimationLoop(
         null
       )
@@ -1197,6 +1718,7 @@ function CategorySpace() {
       categoryObjects.forEach(
         (object) => {
           object.geometry.dispose()
+          object.material.map?.dispose()
           object.material.dispose()
         }
       )
@@ -1232,15 +1754,209 @@ function CategorySpace() {
   }, [])
 
   return (
-    <div
-      ref={containerRef}
-      className="category-space"
-    >
-      <img
-        src="/logo.png"
-        alt="IDEA 3D"
-        className="fixed left-1/2 top-3 z-10 w-40 -translate-x-1/2 select-none pointer-events-none sm:w-56 md:w-64 lg:w-72 xl:w-80"
-      />
+    <div ref={containerRef} className=" category-space relative h-screen w-full overflow-hidden">
+      {/* Logo */}
+      <img src="/logo.png" alt="IDEA 3D" className=" pointer-events-none fixed left-1/2 top-3 z-10 w-40 -translate-x-1/2 select-none sm:w-56 md:w-64 lg:w-72 xl:w-80"/>
+
+      {/* Hologram UI */}
+      <div ref={hologramRef} className=" pointer-events-none absolute z-20 h-0 w-0 opacity-0 transition-all duration-300 ease-out">
+        {/* Description */}
+        <div className=" holo-panel absolute right-[220px] top-1/2 w-[min(44vw,440px)] -translate-y-1/2 p-5 sm:right-[260px] sm:p-6 ">
+          <div className="holo-scan" />
+
+          <div className=" mb-3 font-mono text-[9px] tracking-[0.25em] text-cyan-200 sm:text-xs">
+            FIELD DATA
+          </div>
+
+          <p ref={infoRef} className=" font-mono text-[11px] leading-relaxed text-cyan-50 sm:text-sm"/>
+        </div>
+
+        {/* Image */}
+        <div className=" holo-panel absolute left-[180px] top-1/2 w-[min(44vw,420px)] -translate-y-1/2 overflow-hidden p-4 sm:left-[210px] sm:p-5">
+          <div className="holo-scan" />
+
+          <img ref={imageRef} src="" alt="" className=" aspect-video w-full object-cover opacity-80"/>
+        </div>
+
+        {/* Page button */}
+        <a ref={buttonRef} href="#" className=" pointer-events-auto absolute left-1/2 top-8 flex -translate-x-1/2 translate-y-full flex-row items-center gap-2 whitespace-nowrap font-mono text-sm font-semibold tracking-[0.12em] text-cyan-200 transition hover:text-white sm:top-10 sm:gap-3 sm:text-base">
+          <span className="text-xl leading-none sm:text-2xl">
+            △
+          </span>
+
+          <span>
+            ページに移動
+          </span>
+        </a>
+      </div>
+
+      <style>
+        {`
+          .holo-panel {
+            border: 1px solid
+              rgba(100, 220, 255, 0.65);
+
+            background:
+              linear-gradient(
+                135deg,
+                rgba(0, 80, 110, 0.18),
+                rgba(0, 20, 40, 0.45)
+              );
+
+            box-shadow:
+              0 0 10px
+                rgba(80, 210, 255, 0.18),
+              inset 0 0 20px
+                rgba(80, 210, 255, 0.06);
+
+            clip-path:
+              polygon(
+                10px 0,
+                calc(100% - 10px) 0,
+                100% 10px,
+                100% calc(100% - 10px),
+                calc(100% - 10px) 100%,
+                10px 100%,
+                0 calc(100% - 10px),
+                0 10px
+              );
+
+            animation:
+              holoNoise 0.12s
+              steps(2)
+              infinite;
+          }
+
+          .hologram-focused {
+            transform:
+              scale(1.18);
+            transform-origin:
+              center center;
+          }
+
+          .holo-panel::before,
+          .holo-panel::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+          }
+
+          .holo-panel::before {
+            inset: 5px;
+
+            border: 1px solid
+              rgba(100, 220, 255, 0.16);
+          }
+
+          .holo-panel::after {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+
+            background:
+              rgba(170, 240, 255, 0.8);
+
+            box-shadow:
+              0 8px 0
+                rgba(100, 220, 255, 0.12),
+              0 16px 0
+                rgba(100, 220, 255, 0.08);
+
+            animation:
+              holoScan 1.8s
+              linear
+              infinite;
+          }
+
+          .holo-scan {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+
+            background:
+              repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 3px,
+                rgba(100, 220, 255, 0.035) 4px
+              );
+
+            mix-blend-mode: screen;
+          }
+
+          @keyframes holoScan {
+            from {
+              transform:
+                translateY(0);
+              opacity: 0;
+            }
+
+            20% {
+              opacity: 1;
+            }
+
+            80% {
+              opacity: 0.8;
+            }
+
+            to {
+              transform:
+                translateY(100px);
+              opacity: 0;
+            }
+          }
+
+          @keyframes holoNoise {
+            0% {
+              filter:
+                brightness(1)
+                contrast(1);
+            }
+
+            20% {
+              filter:
+                brightness(1.18)
+                contrast(1.15);
+            }
+
+            40% {
+              filter:
+                brightness(0.9)
+                contrast(1.1);
+            }
+
+            60% {
+              filter:
+                brightness(1.1)
+                contrast(1);
+            }
+
+            80% {
+              filter:
+                brightness(0.94)
+                contrast(1.2);
+            }
+
+            100% {
+              filter:
+                brightness(1)
+                contrast(1);
+            }
+          }
+
+          @media (max-width: 640px) {
+            .holo-panel {
+              padding: 10px;
+            }
+
+            .hologram-focused {
+              transform:
+                scale(1.08);
+            }
+          }
+        `}
+      </style>
     </div>
   )
 }
