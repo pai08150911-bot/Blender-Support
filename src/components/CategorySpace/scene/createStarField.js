@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import {
   SPACE,
-} from './categorySpaceConfig'
+} from '../config/categorySpaceConfig'
 
 function createStarField(
   particleTexture

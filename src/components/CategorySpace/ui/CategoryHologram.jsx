@@ -3,6 +3,7 @@ function CategoryHologram({
   infoRef,
   imageRef,
   buttonRef,
+  pageButtonRef,
 }) {
   return (
     <div
@@ -14,7 +15,7 @@ function CategoryHologram({
         h-0
         w-0
         opacity-0
-        transition-all
+        transition-opacity
         duration-300
         ease-out
       "
@@ -22,13 +23,57 @@ function CategoryHologram({
       <div
         className="
           holo-panel
+          hologram-image-panel
           absolute
           right-[220px]
+          top-1/2
+          w-[min(44vw,420px)]
+          -translate-y-1/2
+          overflow-hidden
+          p-4
+          sm:right-[260px]
+          sm:p-5
+        "
+      >
+        <div className="holo-scan" />
+
+        <div
+          className="
+            mb-3
+            font-mono
+            text-[9px]
+            tracking-[0.25em]
+            text-cyan-200
+            sm:text-xs
+          "
+        >
+          VISUAL DATA
+        </div>
+
+        <img
+          ref={imageRef}
+          src=""
+          alt=""
+          className="
+            aspect-video
+            w-full
+            object-cover
+            opacity-80
+          "
+        />
+      </div>
+
+      <div
+        className="
+          holo-panel
+          hologram-info-panel
+          absolute
+          left-[180px]
           top-1/2
           w-[min(44vw,440px)]
           -translate-y-1/2
           p-5
-          sm:right-[260px]
+          sm:left-[210px]
           sm:p-6
         "
       >
@@ -57,41 +102,47 @@ function CategoryHologram({
             sm:text-sm
           "
         />
-      </div>
 
-      <div
-        className="
-          holo-panel
-          absolute
-          left-[180px]
-          top-1/2
-          w-[min(44vw,420px)]
-          -translate-y-1/2
-          overflow-hidden
-          p-4
-          sm:left-[210px]
-          sm:p-5
-        "
-      >
-        <div className="holo-scan" />
-
-        <img
-          ref={imageRef}
-          src=""
-          alt=""
+        <a
+          ref={pageButtonRef}
+          href="#"
           className="
-            aspect-video
+            hologram-page-button
+            pointer-events-auto
+            mt-6
+            hidden
             w-full
-            object-cover
-            opacity-80
+            items-center
+            justify-center
+            gap-3
+            whitespace-nowrap
+            font-mono
+            text-sm
+            font-bold
+            tracking-[0.14em]
           "
-        />
+        >
+          <span
+            className="
+              hologram-page-button-icon
+              text-lg
+              leading-none
+            "
+          >
+            ▶
+          </span>
+
+          <span>
+            ページへ移動
+          </span>
+        </a>
       </div>
 
-      <a
+      <button
         ref={buttonRef}
-        href="#"
+        type="button"
         className="
+          hologram-expand-button
           pointer-events-auto
           absolute
           left-1/2
@@ -103,12 +154,16 @@ function CategoryHologram({
           items-center
           gap-2
           whitespace-nowrap
+          border-0
+          bg-transparent
+          p-0
           font-mono
           text-sm
           font-semibold
           tracking-[0.12em]
           text-cyan-200
-          transition
+          transition-colors
+          duration-200
           hover:text-white
           sm:top-10
           sm:gap-3
@@ -126,9 +181,9 @@ function CategoryHologram({
         </span>
 
         <span>
-          ページに移動
+          拡大
         </span>
-      </a>
+      </button>
     </div>
   )
 }

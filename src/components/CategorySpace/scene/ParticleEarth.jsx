@@ -6,7 +6,7 @@ const EARTH = {
   radius: 1.5,
 
   particleSize: 0.036,
-  oceanParticleSize: 0.090,
+  oceanParticleSize: 0.09,
 
   formationDuration: 5000,
   rotationSpeed: 0.004,
@@ -304,11 +304,12 @@ function createOceanParticles() {
     i < EARTH.oceanParticleCount;
     i++
   ) {
-    const phi = Math.acos(
-      1 -
-        (2 * (i + 0.5)) /
-          EARTH.oceanParticleCount
-    )
+    const phi =
+      Math.acos(
+        1 -
+          (2 * (i + 0.5)) /
+            EARTH.oceanParticleCount
+      )
 
     const theta =
       Math.PI *
@@ -318,7 +319,8 @@ function createOceanParticles() {
     const sinPhi =
       Math.sin(phi)
 
-    const index = i * 3
+    const index =
+      i * 3
 
     positions[index] =
       EARTH.radius *
@@ -335,13 +337,16 @@ function createOceanParticles() {
       Math.sin(theta)
 
     startPositions[index] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
 
     startPositions[index + 1] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
 
     startPositions[index + 2] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
   }
 
   geometry.setAttribute(
@@ -387,6 +392,7 @@ function createOceanParticles() {
         geometry,
         material
       ),
+
     material,
   }
 }
@@ -415,11 +421,12 @@ function createParticleEarth() {
     i < EARTH.particleCount;
     i++
   ) {
-    const phi = Math.acos(
-      1 -
-        (2 * (i + 0.5)) /
-          EARTH.particleCount
-    )
+    const phi =
+      Math.acos(
+        1 -
+          (2 * (i + 0.5)) /
+            EARTH.particleCount
+      )
 
     const theta =
       Math.PI *
@@ -443,21 +450,27 @@ function createParticleEarth() {
       sinPhi *
       Math.sin(theta)
 
-    const index = i * 3
-    const uvIndex = i * 2
+    const index =
+      i * 3
+
+    const uvIndex =
+      i * 2
 
     positions[index] = x
     positions[index + 1] = y
     positions[index + 2] = z
 
     startPositions[index] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
 
     startPositions[index + 1] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
 
     startPositions[index + 2] =
-      (Math.random() - 0.5) * 8
+      (Math.random() - 0.5) *
+      8
 
     const latitude =
       Math.asin(
@@ -465,7 +478,10 @@ function createParticleEarth() {
       )
 
     const longitude =
-      Math.atan2(x, z)
+      Math.atan2(
+        x,
+        z
+      )
 
     uvs[uvIndex] =
       longitude /
@@ -474,7 +490,8 @@ function createParticleEarth() {
 
     uvs[uvIndex + 1] =
       0.5 -
-      latitude / Math.PI
+      latitude /
+        Math.PI
   }
 
   geometry.setAttribute(
@@ -510,6 +527,7 @@ function createParticleEarth() {
     )
 
   texture.flipY = false
+
   texture.colorSpace =
     THREE.NoColorSpace
 
@@ -553,36 +571,6 @@ function createParticleEarth() {
 
   earth.add(grid)
 
-  const startTime =
-    performance.now()
-
-  const animateFormation = () => {
-    const elapsed =
-      performance.now() -
-      startTime
-
-    const progress =
-      Math.min(
-        elapsed /
-          EARTH.formationDuration,
-        1
-      )
-
-    material.uniforms.uProgress.value =
-      progress
-
-    ocean.material.uniforms.uProgress.value =
-      progress
-
-    if (progress < 1) {
-      requestAnimationFrame(
-        animateFormation
-      )
-    }
-  }
-
-  animateFormation()
-
   const rotationAxis =
     new THREE.Vector3(
       0.4,
@@ -590,18 +578,69 @@ function createParticleEarth() {
       0
     ).normalize()
 
-  const rotate = () => {
-    earth.rotateOnAxis(
-      rotationAxis,
-      EARTH.rotationSpeed
-    )
+  let formationElapsed = 0
 
-    requestAnimationFrame(
-      rotate
-    )
-  }
+  earth.userData.update =
+    (
+      deltaMilliseconds,
+      options = {}
+    ) => {
+      const {
+        skipFormation = false,
+        rotate = true,
+      } = options
 
-  rotate()
+      if (skipFormation) {
+        formationElapsed =
+          EARTH.formationDuration
+      } else if (
+        material.uniforms
+          .uProgress.value < 1
+      ) {
+        formationElapsed +=
+          deltaMilliseconds
+      }
+
+      const progress =
+        Math.min(
+          formationElapsed /
+            EARTH.formationDuration,
+          1
+        )
+
+      material.uniforms
+        .uProgress
+        .value =
+        progress
+
+      ocean.material.uniforms
+        .uProgress
+        .value =
+        progress
+
+      if (rotate) {
+        earth.rotateOnAxis(
+          rotationAxis,
+          EARTH.rotationSpeed
+        )
+      }
+    }
+
+  earth.userData.dispose =
+    () => {
+      geometry.dispose()
+      material.dispose()
+      texture.dispose()
+
+      ocean.points
+        .geometry
+        .dispose()
+
+      ocean.material.dispose()
+
+      grid.geometry.dispose()
+      grid.material.dispose()
+    }
 
   return earth
 }

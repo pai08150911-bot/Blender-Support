@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import {
   ORBIT,
   PARTICLE_SPHERE,
-} from './categorySpaceConfig'
+} from '../config/categorySpaceConfig'
 
 function createParticleSphere(
   color,

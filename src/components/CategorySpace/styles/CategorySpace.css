@@ -1,0 +1,532 @@
+.holo-panel {
+  border:
+    1px solid
+    rgba(100, 220, 255, 0.65);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0, 80, 110, 0.18),
+      rgba(0, 20, 40, 0.45)
+    );
+
+  box-shadow:
+    0 0 10px
+      rgba(80, 210, 255, 0.18),
+    inset 0 0 20px
+      rgba(80, 210, 255, 0.06);
+
+  clip-path:
+    polygon(
+      10px 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      10px 100%,
+      0 calc(100% - 10px),
+      0 10px
+    );
+
+  animation:
+    holoNoise 0.12s
+    steps(2)
+    infinite;
+}
+
+.holo-panel::before,
+.holo-panel::after {
+  content: '';
+
+  position: absolute;
+
+  pointer-events: none;
+}
+
+.holo-panel::before {
+  inset: 5px;
+
+  border:
+    1px solid
+    rgba(100, 220, 255, 0.16);
+}
+
+.holo-panel::after {
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 1px;
+
+  background:
+    rgba(170, 240, 255, 0.8);
+
+  box-shadow:
+    0 8px 0
+      rgba(100, 220, 255, 0.12),
+    0 16px 0
+      rgba(100, 220, 255, 0.08);
+
+  animation:
+    holoScan 1.8s
+    linear
+    infinite;
+}
+
+.holo-scan {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 3px,
+      rgba(
+        100,
+        220,
+        255,
+        0.035
+      ) 4px
+    );
+
+  mix-blend-mode:
+    screen;
+}
+
+/*
+  ------------------------------
+  通常表示
+  ------------------------------
+*/
+
+.hologram-image-panel,
+.hologram-info-panel {
+  max-height:
+    min(70vh, 620px);
+}
+
+.hologram-info-panel {
+  overflow-y: auto;
+}
+
+.hologram-expand-button {
+  text-shadow:
+    0 0 8px
+    rgba(100, 220, 255, 0.45);
+}
+
+/*
+  ------------------------------
+  拡大表示
+  ------------------------------
+
+  hologramの基準点は、
+  選択中カテゴリの画面上の位置。
+
+  拡大時にはカテゴリが
+  画面中央へ来るため、
+  この基準点もほぼ中央になる。
+*/
+
+.hologram-focused
+  .hologram-image-panel {
+  right:
+    clamp(
+      90px,
+      10vw,
+      160px
+    ) !important;
+
+  left:
+    auto !important;
+
+  width:
+    min(
+      34vw,
+      520px,
+      calc(50vw - 140px)
+    ) !important;
+
+  padding:
+    clamp(
+      18px,
+      1.8vw,
+      28px
+    ) !important;
+}
+
+.hologram-focused
+  .hologram-info-panel {
+  right:
+    auto !important;
+
+  left:
+    clamp(
+      90px,
+      10vw,
+      160px
+    ) !important;
+
+  width:
+    min(
+      34vw,
+      520px,
+      calc(50vw - 140px)
+    ) !important;
+
+  padding:
+    clamp(
+      20px,
+      2vw,
+      32px
+    ) !important;
+}
+
+/*
+  拡大状態では通常の
+  「△ 拡大」を消す
+*/
+
+.hologram-focused
+  .hologram-expand-button {
+  display:
+    none !important;
+}
+
+/*
+  ページ移動ボタンは
+  拡大状態だけ表示
+*/
+
+.hologram-focused
+  .hologram-page-button {
+  display:
+    flex !important;
+}
+
+/*
+  ------------------------------
+  黄色いメカニカルボタン
+  ------------------------------
+*/
+
+.hologram-page-button {
+  position: relative;
+
+  min-height: 54px;
+
+  border:
+    1px solid
+    rgba(255, 220, 70, 0.9);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 220, 70, 0.96),
+      rgba(210, 155, 20, 0.92)
+    );
+
+  color:
+    rgba(25, 22, 8, 0.96);
+
+  text-decoration: none;
+
+  clip-path:
+    polygon(
+      10px 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 10px
+    );
+
+  box-shadow:
+    0 0 16px
+      rgba(255, 210, 55, 0.28),
+    inset 0 1px 0
+      rgba(255, 255, 220, 0.7),
+    inset 0 -4px 0
+      rgba(110, 70, 0, 0.24);
+
+  text-shadow:
+    0 1px 0
+    rgba(255, 245, 180, 0.4);
+
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    filter 0.2s ease-out;
+}
+
+.hologram-page-button::before {
+  content: '';
+
+  position: absolute;
+
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+
+  border:
+    1px solid
+    rgba(75, 55, 10, 0.22);
+
+  pointer-events: none;
+}
+
+.hologram-page-button:hover {
+  transform:
+    translateY(-2px);
+
+  filter:
+    brightness(1.08);
+
+  box-shadow:
+    0 0 24px
+      rgba(255, 215, 60, 0.5),
+    inset 0 1px 0
+      rgba(255, 255, 220, 0.8),
+    inset 0 -4px 0
+      rgba(110, 70, 0, 0.22);
+}
+
+.hologram-page-button:active {
+  transform:
+    translateY(0)
+    scale(0.99);
+}
+
+.hologram-page-button-icon {
+  color:
+    rgba(65, 48, 8, 0.95);
+}
+
+/*
+  ------------------------------
+  拡大時の背景暗転
+  ------------------------------
+
+  CategorySpace.jsxで
+  is-visible を付け外しする。
+
+  設定画面より薄い暗さ。
+*/
+
+.category-focus-backdrop {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 15;
+
+  pointer-events: none;
+
+  background:
+    rgba(0, 5, 14, 0.38);
+
+  opacity: 0;
+
+  transition:
+    opacity 0.8s
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    );
+
+  will-change:
+    opacity;
+}
+
+.category-focus-backdrop.is-visible {
+  opacity: 1;
+}
+
+/*
+  ホログラムは暗幕より前
+*/
+
+.category-space
+  .hologram-focused {
+  z-index: 20;
+}
+
+/*
+  ------------------------------
+  Animation
+  ------------------------------
+*/
+
+@keyframes holoScan {
+  from {
+    transform:
+      translateY(0);
+
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 0.8;
+  }
+
+  to {
+    transform:
+      translateY(100px);
+
+    opacity: 0;
+  }
+}
+
+@keyframes holoNoise {
+  0% {
+    filter:
+      brightness(1)
+      contrast(1);
+  }
+
+  20% {
+    filter:
+      brightness(1.18)
+      contrast(1.15);
+  }
+
+  40% {
+    filter:
+      brightness(0.9)
+      contrast(1.1);
+  }
+
+  60% {
+    filter:
+      brightness(1.1)
+      contrast(1);
+  }
+
+  80% {
+    filter:
+      brightness(0.94)
+      contrast(1.2);
+  }
+
+  100% {
+    filter:
+      brightness(1)
+      contrast(1);
+  }
+}
+
+/*
+  ------------------------------
+  Smaller screens
+  ------------------------------
+*/
+
+@media (
+  max-width: 900px
+) {
+  .hologram-focused
+    .hologram-image-panel {
+    right:
+      clamp(
+        70px,
+        9vw,
+        100px
+      ) !important;
+
+    width:
+      min(
+        34vw,
+        calc(50vw - 110px)
+      ) !important;
+  }
+
+  .hologram-focused
+    .hologram-info-panel {
+    left:
+      clamp(
+        70px,
+        9vw,
+        100px
+      ) !important;
+
+    width:
+      min(
+        34vw,
+        calc(50vw - 110px)
+      ) !important;
+  }
+}
+
+@media (
+  max-width: 640px
+) {
+  .holo-panel {
+    padding: 10px;
+  }
+
+  /*
+    スマホ幅では左右2枚を
+    無理に横並びにすると
+    必ず見切れやすくなるため、
+    上下配置へ切り替える。
+  */
+
+  .hologram-focused
+    .hologram-image-panel {
+    top:
+      auto !important;
+
+    right:
+      auto !important;
+
+    bottom:
+      55px !important;
+
+    left:
+      50% !important;
+
+    width:
+      min(
+        86vw,
+        420px
+      ) !important;
+
+    transform:
+      translateX(-50%) !important;
+  }
+
+  .hologram-focused
+    .hologram-info-panel {
+    top:
+      55px !important;
+
+    right:
+      auto !important;
+
+    left:
+      50% !important;
+
+    width:
+      min(
+        86vw,
+        420px
+      ) !important;
+
+    max-height:
+      34vh;
+
+    transform:
+      translateX(-50%) !important;
+  }
+}

@@ -2,10 +2,10 @@ import * as THREE from 'three'
 import {
   CONNECTION,
   ORBIT,
-} from './categorySpaceConfig'
+} from '../config/categorySpaceConfig'
 import {
   CATEGORIES,
-} from './categoryData'
+} from '../config/categoryData'
 
 function createOrbitRing(
   orbitGroup,
