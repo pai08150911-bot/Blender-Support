@@ -3,240 +3,26 @@ import {
   useRef,
 } from 'react'
 import * as THREE from 'three'
+
 import createParticleEarth from './ParticleEarth'
+import CategoryHologram from './CategoryHologram'
 
-const SPACE = {
-  starCount: 1500,
-  starSize: 0.06,
-  starColor: 0xffffff,
-  starDepth: 30,
+import {
+  SPACE,
+  ORBIT,
+  CAMERA,
+} from './categorySpaceConfig'
 
-  moveX: 0.15,
-  moveY: 0.1,
+import {
+  CATEGORIES,
+} from './categoryData'
 
-  rotationSpeed: 0.0007,
-  twinkleSpeed: 0.002,
-}
+import createParticleTexture from './createParticleTexture'
+import createParticleSphere from './createParticleSphere'
+import createStarField from './createStarField'
+import createOrbitRing from './createOrbitRing'
 
-const ORBIT = {
-  radius: 3.3,
-
-  tilt: THREE.MathUtils.degToRad(8),
-
-  dragSensitivity: 0.004,
-  maxDragStep: 0.06,
-
-  objectScale: 0.3,
-
-  snapSpeed: 0.08,
-
-  pauseDuration: 2000,
-
-  centerThreshold:
-    THREE.MathUtils.degToRad(8),
-
-  frontCategoryCount: 3,
-}
-
-const CAMERA = {
-  normalY: 0,
-  normalZ: 6,
-
-  introZ: 2.3,
-
-  topY: 2.4,
-  topZ: 5.5,
-
-  focusY: 0,
-  focusZ: 4.5,
-
-  transitionSpeed: 0.08,
-}
-
-const CONNECTION = {
-  particleCount: 100,
-  particleSizeMin: 0.10,
-  particleSizeMax: 0.15,
-  opacityMin: 0.5,
-  opacityMax: 1.0,
-
-  layerOffsets: [
-    -0.055,
-    0,
-    0.055,
-  ],
-}
-
-const PARTICLE_SPHERE = {
-  particleCount: 900,
-  radius: 1,
-  size: 0.03,
-  opacity: 0.9,
-}
-
-const CATEGORIES = [
-  {
-    name: 'MATERIAL',
-    color: '#FF3B30',
-    description:
-      'マテリアルの基礎から、質感を表現するための設定まで学びます。',
-    image: '/images/material.jpg',
-    link: '/material',
-  },
-  {
-    name: 'SCULPT',
-    color: '#ffe838',
-    description:
-      'スカルプトを使って、モデルの形状を細かく作り込みます。',
-    image: '/images/sculpt.jpg',
-    link: '/sculpt',
-  },
-  {
-    name: 'SHADER',
-    color: '#FF6A00',
-    description:
-      'シェーダーを使って、光や質感を自由に表現します。',
-    image: '/images/shader.jpg',
-    link: '/shader',
-  },
-  {
-    name: 'MODIFIER',
-    color: '#34C759',
-    description:
-      'モディファイアを使って、モデルを効率的に加工します。',
-    image: '/images/modifier.jpg',
-    link: '/modifier',
-  },
-  {
-    name: 'ANIMATION',
-    color: '#007AFF',
-    description:
-      'アニメーションの基本から、オブジェクトを動かす方法まで学びます。',
-    image: '/images/animation.jpg',
-    link: '/animation',
-  },
-  {
-    name: 'TEXTURE',
-    color: '#5856D6',
-    description:
-      'テクスチャを使って、モデルに細かな表現を加えます。',
-    image: '/images/texture.jpg',
-    link: '/texture',
-  },
-  {
-    name: 'LIGHTING',
-    color: '#AF52DE',
-    description:
-      'ライティングを使って、シーン全体の雰囲気を作ります。',
-    image: '/images/lighting.jpg',
-    link: '/lighting',
-  },
-]
-
-function createParticleSphere(
-  color,
-  category
-) {
-  const positions =
-    new Float32Array(
-      PARTICLE_SPHERE.particleCount * 3
-    )
-
-  for (
-    let i = 0;
-    i < PARTICLE_SPHERE.particleCount;
-    i += 1
-  ) {
-    const theta =
-      Math.random() *
-      Math.PI *
-      2
-
-    const phi =
-      Math.acos(
-        2 * Math.random() - 1
-      )
-
-    const sinPhi =
-      Math.sin(phi)
-
-    const index =
-      i * 3
-
-    positions[index] =
-      PARTICLE_SPHERE.radius *
-      sinPhi *
-      Math.cos(theta)
-
-    positions[index + 1] =
-      PARTICLE_SPHERE.radius *
-      Math.cos(phi)
-
-    positions[index + 2] =
-      PARTICLE_SPHERE.radius *
-      sinPhi *
-      Math.sin(theta)
-  }
-
-  const geometry =
-    new THREE.BufferGeometry()
-
-  geometry.setAttribute(
-    'position',
-    new THREE.BufferAttribute(
-      positions,
-      3
-    )
-  )
-
-  const particleTexture =
-    new THREE.TextureLoader().load(
-      'data:image/svg+xml,' +
-        encodeURIComponent(`
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="64"
-            height="64"
-          >
-            <circle
-              cx="32"
-              cy="32"
-              r="30"
-              fill="white"
-            />
-          </svg>
-        `)
-    )
-
-  const material =
-    new THREE.PointsMaterial({
-      color,
-      size: PARTICLE_SPHERE.size,
-      transparent: true,
-      opacity:
-        PARTICLE_SPHERE.opacity,
-      map: particleTexture,
-      alphaTest: 0.01,
-      depthWrite: false,
-      blending:
-        THREE.AdditiveBlending,
-    })
-
-  const sphere =
-    new THREE.Points(
-      geometry,
-      material
-    )
-
-  sphere.scale.setScalar(
-    ORBIT.objectScale
-  )
-
-  sphere.userData.category =
-    category
-
-  return sphere
-}
+import './CategorySpace.css'
 
 function CategorySpace() {
   const containerRef =
@@ -357,73 +143,17 @@ function CategorySpace() {
     )
 
     const particleTexture =
-      new THREE.TextureLoader().load(
-        'data:image/svg+xml,' +
-          encodeURIComponent(`
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="64"
-              height="64"
-            >
-              <circle
-                cx="32"
-                cy="32"
-                r="30"
-                fill="white"
-              />
-            </svg>
-          `)
-      )
+      createParticleTexture()
 
-    const starGeometry =
-      new THREE.BufferGeometry()
-
-    const starPositions =
-      new Float32Array(
-        SPACE.starCount * 3
-      )
-
-    for (
-      let i = 0;
-      i < SPACE.starCount * 3;
-      i += 3
-    ) {
-      starPositions[i] =
-        (Math.random() - 0.5) *
-        SPACE.starDepth
-
-      starPositions[i + 1] =
-        (Math.random() - 0.5) *
-        SPACE.starDepth
-
-      starPositions[i + 2] =
-        (Math.random() - 0.5) *
-        SPACE.starDepth
-    }
-
-    starGeometry.setAttribute(
-      'position',
-      new THREE.BufferAttribute(
-        starPositions,
-        3
-      )
-    )
-
-    const starMaterial =
-      new THREE.PointsMaterial({
-        size: SPACE.starSize,
-        color: SPACE.starColor,
-        transparent: true,
-        opacity: 0.8,
-        map: particleTexture,
-        alphaTest: 0.01,
-        depthWrite: false,
-      })
-
-    const stars =
-      new THREE.Points(
+    const {
+      stars,
+      geometry:
         starGeometry,
-        starMaterial
+      material:
+        starMaterial,
+    } =
+      createStarField(
+        particleTexture
       )
 
     scene.add(stars)
@@ -443,244 +173,14 @@ function CategorySpace() {
       orbitGroup
     )
 
-    const ringGeometries = []
-    const ringMaterials = []
-
-    const particleColors = [
-      new THREE.Color(0xffffff),
-      new THREE.Color(0xd8edff),
-      new THREE.Color(0x8ec5ff),
-      new THREE.Color(0x63b4f5),
-    ]
-
-    CONNECTION.layerOffsets.forEach(
-      (radiusOffset, layerIndex) => {
-        const ringGeometry =
-          new THREE.BufferGeometry()
-
-        const ringPositions = []
-        const ringSizes = []
-        const ringOpacities = []
-        const ringColors = []
-
-        for (
-          let categoryIndex = 0;
-          categoryIndex <
-          CATEGORIES.length;
-          categoryIndex += 1
-        ) {
-          const startAngle =
-            (categoryIndex /
-              CATEGORIES.length) *
-            Math.PI *
-            2
-
-          const endAngle =
-            ((categoryIndex + 1) /
-              CATEGORIES.length) *
-            Math.PI *
-            2
-
-          for (
-            let particleIndex = 0;
-            particleIndex <
-            CONNECTION.particleCount;
-            particleIndex += 1
-          ) {
-            const progress =
-              (particleIndex + 1) /
-              (CONNECTION.particleCount + 1)
-
-            const angle =
-              THREE.MathUtils.lerp(
-                startAngle,
-                endAngle,
-                progress
-              )
-
-            const radius =
-              ORBIT.radius +
-              radiusOffset
-
-            ringPositions.push(
-              Math.cos(angle) *
-                radius,
-              0,
-              Math.sin(angle) *
-                radius
-            )
-
-            ringSizes.push(
-              THREE.MathUtils.randFloat(
-                CONNECTION.particleSizeMin,
-                CONNECTION.particleSizeMax
-              )
-            )
-
-            const layerOpacity =
-              layerIndex === 1
-                ? 1
-                : 0.85
-
-            ringOpacities.push(
-              THREE.MathUtils.randFloat(
-                CONNECTION.opacityMin,
-                CONNECTION.opacityMax
-              ) *
-                layerOpacity
-            )
-
-            const color =
-              THREE.MathUtils.randInt(
-                0,
-                particleColors.length - 1
-              )
-
-            ringColors.push(
-              particleColors[color].r,
-              particleColors[color].g,
-              particleColors[color].b
-            )
-          }
-        }
-
-        ringGeometry.setAttribute(
-          'position',
-          new THREE.Float32BufferAttribute(
-            ringPositions,
-            3
-          )
-        )
-
-        ringGeometry.setAttribute(
-          'aSize',
-          new THREE.Float32BufferAttribute(
-            ringSizes,
-            1
-          )
-        )
-
-        ringGeometry.setAttribute(
-          'aOpacity',
-          new THREE.Float32BufferAttribute(
-            ringOpacities,
-            1
-          )
-        )
-
-        ringGeometry.setAttribute(
-          'aColor',
-          new THREE.Float32BufferAttribute(
-            ringColors,
-            3
-          )
-        )
-
-        const ringMaterial =
-          new THREE.ShaderMaterial({
-            uniforms: {
-              uTexture: {
-                value:
-                  particleTexture,
-              },
-            },
-
-            vertexShader: `
-              attribute float aSize;
-              attribute float aOpacity;
-              attribute vec3 aColor;
-
-              varying float vOpacity;
-              varying vec3 vColor;
-
-              void main() {
-                vOpacity = aOpacity;
-                vColor = aColor;
-
-                vec4 modelPosition =
-                  modelViewMatrix *
-                  vec4(position, 1.0);
-
-                gl_Position =
-                  projectionMatrix *
-                  modelPosition;
-
-                gl_PointSize =
-                  aSize *
-                  100.0 /
-                  -modelPosition.z;
-              }
-            `,
-
-            fragmentShader: `
-              uniform sampler2D uTexture;
-
-              varying float vOpacity;
-              varying vec3 vColor;
-
-              void main() {
-                vec4 textureColor =
-                  texture2D(
-                    uTexture,
-                    gl_PointCoord
-                  );
-
-                if (
-                  textureColor.a <
-                  0.01
-                ) {
-                  discard;
-                }
-
-                float distance =
-                  length(
-                    gl_PointCoord -
-                    vec2(0.5)
-                  );
-
-                float glow =
-                  1.0 -
-                  smoothstep(
-                    0.15,
-                    0.5,
-                    distance
-                  );
-
-                gl_FragColor =
-                  vec4(
-                    vColor,
-                    textureColor.a *
-                    vOpacity *
-                    (0.8 + glow * 0.2)
-                  );
-              }
-            `,
-
-            transparent: true,
-            depthWrite: false,
-            blending:
-              THREE.AdditiveBlending,
-          })
-
-        const ring =
-          new THREE.Points(
-            ringGeometry,
-            ringMaterial
-          )
-
-        orbitGroup.add(
-          ring
-        )
-
-        ringGeometries.push(
-          ringGeometry
-        )
-
-        ringMaterials.push(
-          ringMaterial
-        )
-      }
-    )
+    const {
+      ringGeometries,
+      ringMaterials,
+    } =
+      createOrbitRing(
+        orbitGroup,
+        particleTexture
+      )
 
     const categoryPositions =
       CATEGORIES.map(
@@ -704,15 +204,21 @@ function CategorySpace() {
     const categoryObjects = []
 
     CATEGORIES.forEach(
-      (category, index) => {
+      (
+        category,
+        index
+      ) => {
         const object =
           createParticleSphere(
             category.color,
-            category.name
+            category.name,
+            particleTexture
           )
 
         object.position.copy(
-          categoryPositions[index]
+          categoryPositions[
+            index
+          ]
         )
 
         orbitGroup.add(
@@ -758,11 +264,17 @@ function CategorySpace() {
     let hologramHovered = false
     let pausedUntil = 0
 
-    let displayedCategory = null
-    let hologramVisible = false
+    let displayedCategory =
+      null
 
-    let focusedCategoryIndex = null
-    let focusActive = false
+    let hologramVisible =
+      false
+
+    let focusedCategoryIndex =
+      null
+
+    let focusActive =
+      false
 
     const getCategoryFromPointer =
       (event) => {
@@ -794,7 +306,8 @@ function CategorySpace() {
           )
 
         if (
-          intersections.length === 0
+          intersections.length ===
+          0
         ) {
           return null
         }
@@ -804,7 +317,8 @@ function CategorySpace() {
 
         while (
           current &&
-          !current.userData.category
+          !current.userData
+            .category
         ) {
           current =
             current.parent
@@ -856,7 +370,8 @@ function CategorySpace() {
         return Math.abs(
           normalizeAngle(
             target -
-              orbitGroup.rotation.y
+              orbitGroup
+                .rotation.y
           )
         )
       }
@@ -940,20 +455,66 @@ function CategorySpace() {
         )
       }
 
-    const showHologram = (
-      categoryIndex
-    ) => {
-      const category =
-        CATEGORIES[categoryIndex]
+    const showHologram =
+      (categoryIndex) => {
+        const category =
+          CATEGORIES[
+            categoryIndex
+          ]
 
-      if (!category) {
-        return
-      }
+        if (!category) {
+          return
+        }
 
-      if (
-        displayedCategory ===
-        category.name
-      ) {
+        if (
+          displayedCategory ===
+          category.name
+        ) {
+          if (hologram) {
+            hologram.classList.remove(
+              'opacity-0',
+              'pointer-events-none'
+            )
+
+            hologram.classList.add(
+              'opacity-100',
+              'pointer-events-auto'
+            )
+          }
+
+          hologramVisible =
+            true
+
+          return
+        }
+
+        displayedCategory =
+          category.name
+
+        if (
+          infoRef.current
+        ) {
+          infoRef.current.textContent =
+            category.description
+        }
+
+        if (
+          imageRef.current
+        ) {
+          imageRef.current.src =
+            category.image
+
+          imageRef.current.alt =
+            `${category.name} preview`
+        }
+
+        if (
+          buttonRef.current
+        ) {
+          buttonRef.current.href =
+            category.link
+        }
+
         if (hologram) {
           hologram.classList.remove(
             'opacity-0',
@@ -964,70 +525,42 @@ function CategorySpace() {
             'opacity-100',
             'pointer-events-auto'
           )
+
+          hologramVisible =
+            true
+        }
+      }
+
+    const hideHologram =
+      () => {
+        if (
+          !hologramVisible
+        ) {
+          return
         }
 
-        hologramVisible = true
-        return
+        if (hologram) {
+          hologram.classList.remove(
+            'opacity-100',
+            'pointer-events-auto',
+            'hologram-focused'
+          )
+
+          hologram.classList.add(
+            'opacity-0',
+            'pointer-events-none'
+          )
+        }
+
+        hologramVisible =
+          false
+
+        displayedCategory =
+          null
+
+        hologramHovered =
+          false
       }
-
-      displayedCategory =
-        category.name
-
-      if (infoRef.current) {
-        infoRef.current.textContent =
-          category.description
-      }
-
-      if (imageRef.current) {
-        imageRef.current.src =
-          category.image
-
-        imageRef.current.alt =
-          `${category.name} preview`
-      }
-
-      if (buttonRef.current) {
-        buttonRef.current.href =
-          category.link
-      }
-
-      if (hologram) {
-        hologram.classList.remove(
-          'opacity-0',
-          'pointer-events-none'
-        )
-
-        hologram.classList.add(
-          'opacity-100',
-          'pointer-events-auto'
-        )
-
-        hologramVisible = true
-      }
-    }
-
-    const hideHologram = () => {
-      if (!hologramVisible) {
-        return
-      }
-
-      if (hologram) {
-        hologram.classList.remove(
-          'opacity-100',
-          'pointer-events-auto',
-          'hologram-focused'
-        )
-
-        hologram.classList.add(
-          'opacity-0',
-          'pointer-events-none'
-        )
-      }
-
-      hologramVisible = false
-      displayedCategory = null
-      hologramHovered = false
-    }
 
     const startSnapToCategory =
       (categoryIndex) => {
@@ -1042,7 +575,8 @@ function CategorySpace() {
         target =
           current +
           normalizeAngle(
-            target - current
+            target -
+              current
           )
 
         snap.targetRotation =
@@ -1098,9 +632,11 @@ function CategorySpace() {
 
         if (!isCenter) {
           setFocus(false)
+
           startSnapToCategory(
             index
           )
+
           return
         }
 
@@ -1109,8 +645,10 @@ function CategorySpace() {
           index
         ) {
           setFocus(false)
+
           focusedCategoryIndex =
             null
+
           return
         }
 
@@ -1120,7 +658,10 @@ function CategorySpace() {
         snap.active = false
         pausedUntil = 0
 
-        showHologram(index)
+        showHologram(
+          index
+        )
+
         setFocus(true)
       }
 
@@ -1147,6 +688,7 @@ function CategorySpace() {
             : null
 
         drag.active = true
+
         drag.previousX =
           event.clientX
 
@@ -1156,11 +698,14 @@ function CategorySpace() {
         drag.startY =
           event.clientY
 
-        drag.moved = false
+        drag.moved =
+          false
+
         drag.pressedCategory =
           frontCategory
 
-        snap.active = false
+        snap.active =
+          false
 
         if (
           focusedCategoryIndex !==
@@ -1231,7 +776,8 @@ function CategorySpace() {
           distanceX > 4 ||
           distanceY > 4
         ) {
-          drag.moved = true
+          drag.moved =
+            true
         }
 
         const deltaX =
@@ -1262,6 +808,7 @@ function CategorySpace() {
           !drag.moved
 
         drag.active = false
+
         drag.pressedCategory =
           null
 
@@ -1299,6 +846,7 @@ function CategorySpace() {
         if (wasClick) {
           clearFocus()
           hideHologram()
+
           return
         }
 
@@ -1312,20 +860,26 @@ function CategorySpace() {
         }
       }
 
-    renderer.domElement.addEventListener(
-      'pointerdown',
-      handlePointerDown
-    )
+    renderer
+      .domElement
+      .addEventListener(
+        'pointerdown',
+        handlePointerDown
+      )
 
-    renderer.domElement.addEventListener(
-      'pointermove',
-      handlePointerMove
-    )
+    renderer
+      .domElement
+      .addEventListener(
+        'pointermove',
+        handlePointerMove
+      )
 
-    renderer.domElement.addEventListener(
-      'pointerup',
-      handlePointerUp
-    )
+    renderer
+      .domElement
+      .addEventListener(
+        'pointerup',
+        handlePointerUp
+      )
 
     const hologramPanels =
       hologram
@@ -1336,12 +890,14 @@ function CategorySpace() {
 
     const handleHologramEnter =
       () => {
-        hologramHovered = true
+        hologramHovered =
+          true
       }
 
     const handleHologramLeave =
       () => {
-        hologramHovered = false
+        hologramHovered =
+          false
       }
 
     hologramPanels.forEach(
@@ -1358,7 +914,9 @@ function CategorySpace() {
       }
     )
 
-    if (buttonRef.current) {
+    if (
+      buttonRef.current
+    ) {
       buttonRef.current.addEventListener(
         'pointerenter',
         handleHologramEnter
@@ -1457,8 +1015,10 @@ function CategorySpace() {
                 0,
                 mouse.y
               ) *
-                (CAMERA.normalZ -
-                  CAMERA.topZ)
+                (
+                  CAMERA.normalZ -
+                  CAMERA.topZ
+                )
             : focusActive
               ? CAMERA.focusZ
               : CAMERA.normalZ
@@ -1501,7 +1061,8 @@ function CategorySpace() {
           orbitGroup.rotation.y =
             snap.targetRotation
 
-          snap.active = false
+          snap.active =
+            false
 
           pausedUntil =
             Date.now() +
@@ -1510,7 +1071,8 @@ function CategorySpace() {
       }
 
       const isObjectHovered =
-        hoveredCategory !== null
+        hoveredCategory !==
+        null
 
       const canAutoRotate =
         !drag.active &&
@@ -1518,7 +1080,8 @@ function CategorySpace() {
         !isObjectHovered &&
         !hologramHovered &&
         !focusActive &&
-        Date.now() >= pausedUntil
+        Date.now() >=
+          pausedUntil
 
       if (canAutoRotate) {
         orbitGroup.rotation.y +=
@@ -1554,7 +1117,8 @@ function CategorySpace() {
           )
         } else if (
           !drag.active &&
-          distance < showDistance
+          distance <
+            showDistance
         ) {
           showHologram(
             nearestIndex
@@ -1565,7 +1129,8 @@ function CategorySpace() {
           drag.active ||
           (
             !focusActive &&
-            distance > hideDistance
+            distance >
+              hideDistance
           )
         ) {
           hideHologram()
@@ -1584,7 +1149,9 @@ function CategorySpace() {
 
           if (index !== -1) {
             const object =
-              categoryObjects[index]
+              categoryObjects[
+                index
+              ]
 
             projectedPosition.copy(
               object.position
@@ -1605,15 +1172,19 @@ function CategorySpace() {
               container.clientHeight
 
             const x =
-              (projectedPosition.x *
-                0.5 +
-                0.5) *
+              (
+                projectedPosition.x *
+                  0.5 +
+                0.5
+              ) *
               width
 
             const y =
-              (-projectedPosition.y *
-                0.5 +
-                0.5) *
+              (
+                -projectedPosition.y *
+                  0.5 +
+                0.5
+              ) *
               height
 
             hologram.style.left =
@@ -1665,20 +1236,26 @@ function CategorySpace() {
         handleResize
       )
 
-      renderer.domElement.removeEventListener(
-        'pointerdown',
-        handlePointerDown
-      )
+      renderer
+        .domElement
+        .removeEventListener(
+          'pointerdown',
+          handlePointerDown
+        )
 
-      renderer.domElement.removeEventListener(
-        'pointermove',
-        handlePointerMove
-      )
+      renderer
+        .domElement
+        .removeEventListener(
+          'pointermove',
+          handlePointerMove
+        )
 
-      renderer.domElement.removeEventListener(
-        'pointerup',
-        handlePointerUp
-      )
+      renderer
+        .domElement
+        .removeEventListener(
+          'pointerup',
+          handlePointerUp
+        )
 
       hologramPanels.forEach(
         (panel) => {
@@ -1694,7 +1271,9 @@ function CategorySpace() {
         }
       )
 
-      if (buttonRef.current) {
+      if (
+        buttonRef.current
+      ) {
         buttonRef.current.removeEventListener(
           'pointerenter',
           handleHologramEnter
@@ -1706,11 +1285,6 @@ function CategorySpace() {
         )
       }
 
-      window.removeEventListener(
-        'resize',
-        handleResize
-      )
-
       renderer.setAnimationLoop(
         null
       )
@@ -1718,7 +1292,6 @@ function CategorySpace() {
       categoryObjects.forEach(
         (object) => {
           object.geometry.dispose()
-          object.material.map?.dispose()
           object.material.dispose()
         }
       )
@@ -1737,6 +1310,7 @@ function CategorySpace() {
 
       starGeometry.dispose()
       starMaterial.dispose()
+
       particleTexture.dispose()
 
       renderer.dispose()
@@ -1754,209 +1328,49 @@ function CategorySpace() {
   }, [])
 
   return (
-    <div ref={containerRef} className=" category-space relative h-screen w-full overflow-hidden">
-      {/* Logo */}
-      <img src="/logo.png" alt="IDEA 3D" className=" pointer-events-none fixed left-1/2 top-3 z-10 w-40 -translate-x-1/2 select-none sm:w-56 md:w-64 lg:w-72 xl:w-80"/>
+    <div
+      ref={containerRef}
+      className="
+        category-space
+        relative
+        h-screen
+        w-full
+        overflow-hidden
+      "
+    >
+      <img
+        src="/logo.png"
+        alt="IDEA 3D"
+        className="
+          pointer-events-none
+          fixed
+          left-1/2
+          top-3
+          z-10
+          w-40
+          -translate-x-1/2
+          select-none
+          sm:w-56
+          md:w-64
+          lg:w-72
+          xl:w-80
+        "
+      />
 
-      {/* Hologram UI */}
-      <div ref={hologramRef} className=" pointer-events-none absolute z-20 h-0 w-0 opacity-0 transition-all duration-300 ease-out">
-        {/* Description */}
-        <div className=" holo-panel absolute right-[220px] top-1/2 w-[min(44vw,440px)] -translate-y-1/2 p-5 sm:right-[260px] sm:p-6 ">
-          <div className="holo-scan" />
-
-          <div className=" mb-3 font-mono text-[9px] tracking-[0.25em] text-cyan-200 sm:text-xs">
-            FIELD DATA
-          </div>
-
-          <p ref={infoRef} className=" font-mono text-[11px] leading-relaxed text-cyan-50 sm:text-sm"/>
-        </div>
-
-        {/* Image */}
-        <div className=" holo-panel absolute left-[180px] top-1/2 w-[min(44vw,420px)] -translate-y-1/2 overflow-hidden p-4 sm:left-[210px] sm:p-5">
-          <div className="holo-scan" />
-
-          <img ref={imageRef} src="" alt="" className=" aspect-video w-full object-cover opacity-80"/>
-        </div>
-
-        {/* Page button */}
-        <a ref={buttonRef} href="#" className=" pointer-events-auto absolute left-1/2 top-8 flex -translate-x-1/2 translate-y-full flex-row items-center gap-2 whitespace-nowrap font-mono text-sm font-semibold tracking-[0.12em] text-cyan-200 transition hover:text-white sm:top-10 sm:gap-3 sm:text-base">
-          <span className="text-xl leading-none sm:text-2xl">
-            △
-          </span>
-
-          <span>
-            ページに移動
-          </span>
-        </a>
-      </div>
-
-      <style>
-        {`
-          .holo-panel {
-            border: 1px solid
-              rgba(100, 220, 255, 0.65);
-
-            background:
-              linear-gradient(
-                135deg,
-                rgba(0, 80, 110, 0.18),
-                rgba(0, 20, 40, 0.45)
-              );
-
-            box-shadow:
-              0 0 10px
-                rgba(80, 210, 255, 0.18),
-              inset 0 0 20px
-                rgba(80, 210, 255, 0.06);
-
-            clip-path:
-              polygon(
-                10px 0,
-                calc(100% - 10px) 0,
-                100% 10px,
-                100% calc(100% - 10px),
-                calc(100% - 10px) 100%,
-                10px 100%,
-                0 calc(100% - 10px),
-                0 10px
-              );
-
-            animation:
-              holoNoise 0.12s
-              steps(2)
-              infinite;
-          }
-
-          .hologram-focused {
-            transform:
-              scale(1.18);
-            transform-origin:
-              center center;
-          }
-
-          .holo-panel::before,
-          .holo-panel::after {
-            content: '';
-            position: absolute;
-            pointer-events: none;
-          }
-
-          .holo-panel::before {
-            inset: 5px;
-
-            border: 1px solid
-              rgba(100, 220, 255, 0.16);
-          }
-
-          .holo-panel::after {
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-
-            background:
-              rgba(170, 240, 255, 0.8);
-
-            box-shadow:
-              0 8px 0
-                rgba(100, 220, 255, 0.12),
-              0 16px 0
-                rgba(100, 220, 255, 0.08);
-
-            animation:
-              holoScan 1.8s
-              linear
-              infinite;
-          }
-
-          .holo-scan {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-
-            background:
-              repeating-linear-gradient(
-                0deg,
-                transparent 0px,
-                transparent 3px,
-                rgba(100, 220, 255, 0.035) 4px
-              );
-
-            mix-blend-mode: screen;
-          }
-
-          @keyframes holoScan {
-            from {
-              transform:
-                translateY(0);
-              opacity: 0;
-            }
-
-            20% {
-              opacity: 1;
-            }
-
-            80% {
-              opacity: 0.8;
-            }
-
-            to {
-              transform:
-                translateY(100px);
-              opacity: 0;
-            }
-          }
-
-          @keyframes holoNoise {
-            0% {
-              filter:
-                brightness(1)
-                contrast(1);
-            }
-
-            20% {
-              filter:
-                brightness(1.18)
-                contrast(1.15);
-            }
-
-            40% {
-              filter:
-                brightness(0.9)
-                contrast(1.1);
-            }
-
-            60% {
-              filter:
-                brightness(1.1)
-                contrast(1);
-            }
-
-            80% {
-              filter:
-                brightness(0.94)
-                contrast(1.2);
-            }
-
-            100% {
-              filter:
-                brightness(1)
-                contrast(1);
-            }
-          }
-
-          @media (max-width: 640px) {
-            .holo-panel {
-              padding: 10px;
-            }
-
-            .hologram-focused {
-              transform:
-                scale(1.08);
-            }
-          }
-        `}
-      </style>
+      <CategoryHologram
+        hologramRef={
+          hologramRef
+        }
+        infoRef={
+          infoRef
+        }
+        imageRef={
+          imageRef
+        }
+        buttonRef={
+          buttonRef
+        }
+      />
     </div>
   )
 }
