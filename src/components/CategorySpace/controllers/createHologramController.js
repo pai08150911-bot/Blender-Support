@@ -2,6 +2,7 @@ import * as THREE from 'three'
 
 export default function createHologramController({
   hologram,
+  titleRef,
   infoRef,
   imageRef,
   pageButtonRef,
@@ -35,6 +36,11 @@ export default function createHologramController({
 
       categoryIndex =
         index
+
+      if (titleRef.current) {
+        titleRef.current.textContent =
+          category.name
+      }
 
       if (infoRef.current) {
         infoRef.current.textContent =
@@ -151,6 +157,7 @@ export default function createHologramController({
       now
     ) => {
       updateContent(index)
+
       position(index)
 
       setOpacity(false)
@@ -307,22 +314,22 @@ export default function createHologramController({
       )
     }
 
-    return {
+  return {
     show,
     hide,
     update,
     setFocused,
 
     getElement() {
-        return hologram
+      return hologram
     },
 
     getCategoryIndex() {
-        return categoryIndex
+      return categoryIndex
     },
 
     getState() {
-        return state
+      return state
     },
-    }
+  }
 }

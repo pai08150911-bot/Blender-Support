@@ -8,6 +8,11 @@ import {
   CATEGORIES,
 } from '../config/categoryData'
 
+const FOCUS_CENTER_EPSILON =
+  THREE.MathUtils.degToRad(
+    0.1
+  )
+
 export default function createCategoryInteractionController({
   renderer,
   camera,
@@ -112,9 +117,18 @@ export default function createCategoryInteractionController({
       return Math.abs(
         normalizeAngle(
           target -
-            orbitGroup
-              .rotation.y
+            orbitGroup.rotation.y
         )
+      )
+    }
+
+  const isCategoryCentered =
+    (index) => {
+      return (
+        getCategoryDistance(
+          index
+        ) <=
+        FOCUS_CENTER_EPSILON
       )
     }
 
@@ -176,6 +190,25 @@ export default function createCategoryInteractionController({
           }
         }
       )
+
+      return nearestIndex
+    }
+
+  const alignInitialCategory =
+    () => {
+      const nearestIndex =
+        findNearestCategory()
+
+      orbitGroup.rotation.y =
+        getCategoryRotation(
+          nearestIndex
+        )
+
+      snap.active =
+        false
+
+      pendingFocusAfterSnap =
+        null
 
       return nearestIndex
     }
@@ -360,16 +393,12 @@ export default function createCategoryInteractionController({
         return
       }
 
-      const distance =
-        getCategoryDistance(
+      const isCentered =
+        isCategoryCentered(
           index
         )
 
-      const isCenter =
-        distance <
-        ORBIT.centerThreshold
-
-      if (!isCenter) {
+      if (!isCentered) {
         pendingFocusAfterSnap =
           null
 
@@ -407,17 +436,14 @@ export default function createCategoryInteractionController({
         return
       }
 
-      const distance =
-        getCategoryDistance(
+      const isCentered =
+        isCategoryCentered(
           categoryIndex
         )
 
       hologramController.hide()
 
-      if (
-        distance <
-        ORBIT.centerThreshold
-      ) {
+      if (isCentered) {
         prepareFocus(
           categoryIndex
         )
@@ -971,6 +997,7 @@ export default function createCategoryInteractionController({
     canAutoRotate,
 
     delayAutoRotation,
+    alignInitialCategory,
     getNearestCategoryData,
 
     dispose,

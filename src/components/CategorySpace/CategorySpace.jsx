@@ -83,6 +83,9 @@ function CategorySpace() {
   const hologramRef =
     useRef(null)
 
+  const titleRef =
+    useRef(null)
+
   const infoRef =
     useRef(null)
 
@@ -228,6 +231,8 @@ function CategorySpace() {
       createHologramController({
         hologram,
 
+        titleRef,
+
         infoRef,
 
         imageRef,
@@ -313,6 +318,19 @@ function CategorySpace() {
         pageButtonRef,
       })
 
+      const shouldAlignInitialCategory =
+    !settingsRef.current
+      .autoRotate ||
+    settingsRef.current
+      .skipEarthAnimation
+
+  if (
+    shouldAlignInitialCategory
+  ) {
+    interactionController
+      .alignInitialCategory()
+  }
+
     const animationController =
       createCategoryAnimationController({
         scene,
@@ -338,6 +356,8 @@ function CategorySpace() {
         settingsRef,
 
         logo,
+
+        categoryObjects,
       })
 
     const applySettings =
@@ -442,6 +462,9 @@ function CategorySpace() {
       <CategoryHologram
         hologramRef={
           hologramRef
+        }
+        titleRef={
+          titleRef
         }
         infoRef={
           infoRef

@@ -1,5 +1,6 @@
 function CategoryHologram({
   hologramRef,
+  titleRef,
   infoRef,
   imageRef,
   buttonRef,
@@ -22,23 +23,56 @@ function CategoryHologram({
     >
       <div
         className="
+          hologram-title
+          pointer-events-none
+          absolute
+        "
+      >
+        <div
+          className="
+            hologram-title-label
+            mb-1
+            font-mono
+            text-[8px]
+            tracking-[0.32em]
+            text-cyan-300/70
+            sm:text-[10px]
+          "
+        >
+          CATEGORY
+        </div>
+
+        <div
+          ref={titleRef}
+          className="
+            hologram-title-text
+            whitespace-nowrap
+            font-mono
+            text-lg
+            font-bold
+            tracking-[0.18em]
+            text-cyan-100
+            sm:text-xl
+          "
+        />
+      </div>
+
+      <div
+        className="
           holo-panel
           hologram-image-panel
           absolute
-          right-[220px]
           top-1/2
-          w-[min(44vw,420px)]
-          -translate-y-1/2
           overflow-hidden
-          p-4
-          sm:right-[260px]
-          sm:p-5
         "
       >
         <div className="holo-scan" />
 
         <div
           className="
+            hologram-image-header
+            relative
+            z-[1]
             mb-3
             font-mono
             text-[9px]
@@ -50,17 +84,40 @@ function CategoryHologram({
           VISUAL DATA
         </div>
 
-        <img
-          ref={imageRef}
-          src=""
-          alt=""
+        <div className="hologram-image-frame">
+          <img
+            ref={imageRef}
+            src=""
+            alt=""
+            className="
+              aspect-video
+              block
+              w-full
+              object-cover
+              opacity-90
+            "
+          />
+        </div>
+
+        <div
           className="
-            aspect-video
-            w-full
-            object-cover
-            opacity-80
+            hologram-image-footer
+            relative
+            z-[1]
+            flex
+            items-center
+            justify-between
+            font-mono
           "
-        />
+        >
+          <span>
+            CATEGORY VISUAL
+          </span>
+
+          <span>
+            REFERENCE DATA
+          </span>
+        </div>
       </div>
 
       <div
@@ -68,50 +125,59 @@ function CategoryHologram({
           holo-panel
           hologram-info-panel
           absolute
-          left-[180px]
           top-1/2
-          w-[min(44vw,440px)]
-          -translate-y-1/2
-          p-5
-          sm:left-[210px]
-          sm:p-6
         "
       >
         <div className="holo-scan" />
 
         <div
           className="
-            mb-3
-            font-mono
-            text-[9px]
-            tracking-[0.25em]
-            text-cyan-200
-            sm:text-xs
+            hologram-info-content
+            relative
+            z-[1]
           "
         >
-          FIELD DATA
+          <div
+            className="
+              mb-4
+              font-mono
+              text-[9px]
+              tracking-[0.25em]
+              text-cyan-200
+              sm:text-xs
+            "
+          >
+            FIELD DATA
+          </div>
+
+          <p
+            ref={infoRef}
+            className="
+              font-mono
+              text-[11px]
+              leading-relaxed
+              text-cyan-50
+              sm:text-sm
+            "
+          />
         </div>
+      </div>
 
-        <p
-          ref={infoRef}
+      <div
+        className="
+          hologram-action-area
+          pointer-events-none
+          absolute
+          left-1/2
+        "
+      >
+        <button
+          ref={buttonRef}
+          type="button"
           className="
-            font-mono
-            text-[11px]
-            leading-relaxed
-            text-cyan-50
-            sm:text-sm
-          "
-        />
-
-        <a
-          ref={pageButtonRef}
-          href="#"
-          className="
-            hologram-page-button
+            hologram-expand-button
             pointer-events-auto
-            mt-6
-            hidden
-            w-full
+            flex
             items-center
             justify-center
             gap-3
@@ -120,6 +186,40 @@ function CategoryHologram({
             text-sm
             font-bold
             tracking-[0.14em]
+            sm:text-base
+          "
+        >
+          <span
+            className="
+              hologram-expand-button-icon
+              text-lg
+              leading-none
+            "
+          >
+            ▶
+          </span>
+
+          <span>
+            拡大
+          </span>
+        </button>
+
+        <a
+          ref={pageButtonRef}
+          href="#"
+          className="
+            hologram-page-button
+            pointer-events-auto
+            hidden
+            items-center
+            justify-center
+            gap-3
+            whitespace-nowrap
+            font-mono
+            text-sm
+            font-bold
+            tracking-[0.14em]
+            sm:text-base
           "
         >
           <span
@@ -137,53 +237,6 @@ function CategoryHologram({
           </span>
         </a>
       </div>
-
-      <button
-        ref={buttonRef}
-        type="button"
-        className="
-          hologram-expand-button
-          pointer-events-auto
-          absolute
-          left-1/2
-          top-8
-          flex
-          -translate-x-1/2
-          translate-y-full
-          flex-row
-          items-center
-          gap-2
-          whitespace-nowrap
-          border-0
-          bg-transparent
-          p-0
-          font-mono
-          text-sm
-          font-semibold
-          tracking-[0.12em]
-          text-cyan-200
-          transition-colors
-          duration-200
-          hover:text-white
-          sm:top-10
-          sm:gap-3
-          sm:text-base
-        "
-      >
-        <span
-          className="
-            text-xl
-            leading-none
-            sm:text-2xl
-          "
-        >
-          △
-        </span>
-
-        <span>
-          拡大
-        </span>
-      </button>
     </div>
   )
 }

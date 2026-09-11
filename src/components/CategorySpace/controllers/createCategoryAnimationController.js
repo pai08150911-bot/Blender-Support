@@ -6,13 +6,14 @@ import {
 } from '../config/categorySpaceConfig'
 
 export default function createCategoryAnimationController({
+  scene,
   renderer,
   camera,
   earth,
-  scene,
   stars,
   starMaterial,
   orbitGroup,
+  categoryObjects,
   focusController,
   hologramController,
   interactionController,
@@ -24,6 +25,36 @@ export default function createCategoryAnimationController({
 
   let lastFrameTime =
     performance.now()
+
+  const updateCategoryAnimations =
+    (
+      deltaMilliseconds
+    ) => {
+      const focusedIndex =
+        focusController.isFocused()
+          ? focusController
+              .getFocusedCategoryIndex()
+          : null
+
+      categoryObjects.forEach(
+        (
+          object,
+          index
+        ) => {
+          const focused =
+            focusedIndex ===
+            index
+
+          object.userData
+            .updateFocusAnimation?.(
+              deltaMilliseconds,
+              focused,
+              settingsRef.current
+                .performanceMode
+            )
+        }
+      )
+    }
 
   const animate =
     () => {
@@ -44,6 +75,10 @@ export default function createCategoryAnimationController({
         now
       )
 
+      updateCategoryAnimations(
+        deltaMilliseconds
+      )
+
       if (
         !focusController.isFocused()
       ) {
@@ -62,7 +97,8 @@ export default function createCategoryAnimationController({
       }
 
       const elapsedTime =
-        now / 1000
+        now /
+        1000
 
       if (
         !settingsRef.current
@@ -103,7 +139,8 @@ export default function createCategoryAnimationController({
           .value
 
       const isLoading =
-        earthProgress < 1
+        earthProgress <
+        1
 
       if (
         !isLoading &&
@@ -126,7 +163,9 @@ export default function createCategoryAnimationController({
           true
       }
 
-      if (isLoading) {
+      if (
+        isLoading
+      ) {
         const introProgress =
           THREE.MathUtils.smoothstep(
             earthProgress,
@@ -231,7 +270,9 @@ export default function createCategoryAnimationController({
           SPACE.rotationSpeed
       }
 
-      if (!isLoading) {
+      if (
+        !isLoading
+      ) {
         if (
           focusController.isFocused()
         ) {
